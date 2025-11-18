@@ -1,0 +1,14 @@
+# core
+asyncio
+pydantic
+
+# utilities
+python-dotenv
+aiohttp
+requests
+
+# Added for news fetching
+feedparser
+tweepy
+python-dotenv
+firebase-admin

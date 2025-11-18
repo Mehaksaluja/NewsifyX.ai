@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.venv/
+venv/
+env/
+.env
+
+models/
+data/cookies/
+data/cache/
+data/logs/
+
+.vscode/
+.idea/
+firebase_key.json

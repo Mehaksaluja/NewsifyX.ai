@@ -1,0 +1,16 @@
+# --- SENSITIVE FILES (Kabhi upload mat karna) ---
+.env
+firebase_key.json
+*.pem
+
+# --- PYTHON (Backend) ---
+__pycache__/
+*.pyc
+venv/
+.venv/
+env/
+
+# --- NODE.JS (Frontend) ---
+node_modules/
+dist/
+.DS_Store
