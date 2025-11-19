@@ -1,8 +1,3 @@
-Yeh rahi ekdum **concise aur professional** `README.md` file. Isme sab zaroori baatein hain par faltu ki kahani nahi hai.
-
-Apne `AI_News_System` folder ke root mein `README.md` banao aur yeh paste kar do:
-
-````markdown
 # 🤖 Autonomous AI Newsroom
 
 > **A hybrid edge-cloud AI system that curates global news and broadcasts to X (Twitter) autonomously.**
@@ -60,6 +55,3 @@ npm run dev
 -----
 
 **Developed by Mehak Saluja**
-
-```
-```
