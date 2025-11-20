@@ -92,7 +92,7 @@ async def main_logic():
             continue
 
         if not config.get("is_active", True):
-            print(f"\r💤 Bot is PAUSED via Dashboard. Checking again in 10s...", end="")
+            print(f"💤 Bot is PAUSED via Dashboard. Checking again in 10s...", end="")
             await asyncio.sleep(10) 
             continue
         current_hour = datetime.now().hour
@@ -100,7 +100,7 @@ async def main_logic():
         end_hour = config.get("active_hours_end", 22)
 
         if current_hour < start_hour or current_hour >= end_hour:
-            print(f"\r🌙 Off-Hours ({current_hour}:00). Active: {start_hour}-{end_hour}. Checking again in 60s...", end="")
+            print(f"🌙 Off-Hours ({current_hour}:00). Active: {start_hour}-{end_hour}. Checking again in 60s...", end="")
             await asyncio.sleep(60) 
             continue
 
@@ -128,7 +128,7 @@ async def main_logic():
             minutes = int(remaining.total_seconds() // 60)
             seconds = int(remaining.total_seconds() % 60)
             
-            print(f"\r⏳ Waiting... Next run in {minutes}m {seconds}s | Config: {freq} tweets/day", end="")
+            print(f"⏳ Waiting... Next run in {minutes}m {seconds}s | Config: {freq} tweets/day", end="")
             await asyncio.sleep(10)
 
 if __name__ == "__main__":
