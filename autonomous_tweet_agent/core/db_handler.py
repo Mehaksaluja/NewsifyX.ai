@@ -1,73 +1,71 @@
 import firebase_admin
-from firebase_admin import credentials
-from firebase_admin import firestore
+from firebase_admin import credentials, firestore
 import datetime
 import os
+import json
 
-# Global client variable
 db_client = None
 
 def init_firebase():
-    """
-    Initializes the Firebase connection using the JSON key.
-    """
     global db_client
-    
-    # Check if already initialized to avoid errors
     if not firebase_admin._apps:
-        # Ensure the key file exists
-        if not os.path.exists("firebase_key.json"):
-            print("Error: firebase_key.json not found!")
+        cred = None
+        
+        # 1. Try loading from Environment Variable (For Cloud/Render)
+        firebase_json_str = os.environ.get("FIREBASE_CREDENTIALS_JSON")
+        if firebase_json_str:
+            print("☁️ Loading Firebase from Environment Variable")
+            cred_dict = json.loads(firebase_json_str)
+            cred = credentials.Certificate(cred_dict)
+        
+        # 2. Try loading from Local File (For Laptop)
+        elif os.path.exists("firebase_key.json"):
+            print("💻 Loading Firebase from local JSON file")
+            cred = credentials.Certificate("firebase_key.json")
+            
+        else:
+            print("❌ CRITICAL ERROR: No Firebase credentials found!")
             return None
             
-        cred = credentials.Certificate("firebase_key.json")
         firebase_admin.initialize_app(cred)
-        print("🔥 Firebase Initialized Successfully!")
     
     db_client = firestore.client()
     return db_client
 
 def log_tweet(topic, tweet_text, tweet_id):
-    """
-    Saves a posted tweet to the 'tweets' collection in Firestore.
-    """
-    if db_client is None:
-        init_firebase()
-
+    if db_client is None: init_firebase()
     data = {
         "topic": topic,
         "tweet_text": tweet_text,
         "tweet_id": tweet_id,
         "timestamp": datetime.datetime.now(),
-        # Frontend par dikhane ke liye formatted time
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
-    
-    # Add to 'tweets' collection
-    db_client.collection("tweets").add(data)
-    print(f"✅ Tweet logged to Firebase: {tweet_id}")
+    try:
+        db_client.collection("tweets").add(data)
+        print(f"✅ Tweet logged to Firebase: {tweet_id}")
+    except Exception as e:
+        print(f"⚠️ DB Log Error: {e}")
 
 def get_bot_config():
-    """
-    Reads the bot settings (active hours, frequency) from 'bot_config'.
-    If no config exists, it creates a default one.
-    """
-    if db_client is None:
-        init_firebase()
+    if db_client is None: init_firebase()
+    try:
+        config_ref = db_client.collection("bot_config").document("main_settings")
+        doc = config_ref.get()
+        if doc.exists: return doc.to_dict()
+        else:
+            default = {"is_active": True, "tweets_per_day": 4, "active_hours_start": 9, "active_hours_end": 22}
+            config_ref.set(default)
+            return default
+    except Exception as e:
+        print(f"⚠️ Config Read Error: {e}")
+        return {} # Return empty to force defaults in main.py
 
-    config_ref = db_client.collection("bot_config").document("main_settings")
-    doc = config_ref.get()
-
-    if doc.exists:
-        return doc.to_dict()
-    else:
-        # Create default settings if not found
-        default_config = {
-            "is_active": True,         # Bot ON/OFF
-            "tweets_per_day": 4,       # Frequency
-            "active_hours_start": 9,   # 9 AM
-            "active_hours_end": 22     # 10 PM
-        }
-        config_ref.set(default_config)
-        print("⚙️ Default config created in Firebase.")
-        return default_config
+def turn_off_force_run():
+    if db_client is None: init_firebase()
+    try:
+        config_ref = db_client.collection("bot_config").document("main_settings")
+        config_ref.update({"force_run": False})
+        print("✅ Force run flag reset.")
+    except Exception as e:
+        print(f"⚠️ Error resetting flag: {e}")

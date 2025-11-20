@@ -1,12 +1,12 @@
 from tools.base_tool import BaseTool
-from core.model_adapter import OllamaModelAdapter
+from core.model_adapter import GroqModelAdapter
 
 class TweetWriterTool(BaseTool):
     name = "tweetbot"
     description = "Writes an engaging tweet from a title and summary."
 
     def __init__(self):
-        self.model = OllamaModelAdapter("qwen2.5:1.5b")
+        self.model = GroqModelAdapter("llama-3.3-70b-versatile")
 
     async def run(self, item_data: str):
         

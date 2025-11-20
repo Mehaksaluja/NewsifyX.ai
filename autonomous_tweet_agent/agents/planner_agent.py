@@ -1,13 +1,13 @@
 import json
-from core.model_adapter import OllamaModelAdapter
+from core.model_adapter import GroqModelAdapter
 
 class PlannerAgent:
     """
     Converts user query into a structured JSON plan.
     """
 
-    def __init__(self, model=None):
-        self.model = model or OllamaModelAdapter("qwen2.5:1.5b")
+    def __init__(self):
+        self.model = GroqModelAdapter("llama-3.3-70b-versatile")
 
     async def plan(self, user_query: str):
         prompt = f"""

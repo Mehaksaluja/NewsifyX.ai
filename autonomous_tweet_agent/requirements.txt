@@ -12,3 +12,8 @@ feedparser
 tweepy
 python-dotenv
 firebase-admin
+
+groq
+
+gunicorn
+flask

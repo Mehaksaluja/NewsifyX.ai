@@ -1,12 +1,12 @@
 from tools.base_tool import BaseTool
-from core.model_adapter import OllamaModelAdapter
+from core.model_adapter import GroqModelAdapter
 
 class HeadlineSelectionTool(BaseTool):
     name = "headline_selector"
     description = "Selects the single most tweet-worthy news item (Title + Summary) from a list."
 
     def __init__(self):
-        self.model = OllamaModelAdapter("qwen2.5:1.5b")
+        self.model = GroqModelAdapter("llama-3.3-70b-versatile")
 
     async def run(self, news_data: str):
         
