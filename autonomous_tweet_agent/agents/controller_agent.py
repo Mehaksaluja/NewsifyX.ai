@@ -32,10 +32,13 @@ class ControllerAgent:
             tool = self.registry.get(tool_name)
             if not tool:
                 results.append(f"Tool '{tool_name}' not found")
+                print(f"❌ Tool '{tool_name}' not found")
                 continue
 
             # Tool ko asli data (last_output) ke saath run karenge
+            print(f"\n🔧 Running tool: {tool_name}")
             output = await tool.run(tool_input)
+            print(f"📤 Output from {tool_name}: {output}")
 
             last_output = output # Naye result ko save karenge
             results.append(output)

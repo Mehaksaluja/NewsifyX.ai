@@ -2,74 +2,82 @@ import tweepy
 import os
 import asyncio
 from tools.base_tool import BaseTool
-# Database logger import kiya
 from core.db_handler import log_tweet
 
 class TwitterPosterTool(BaseTool):
     name = "twitter_poster"
-    description = "Posts the final tweet text to X (Twitter) and logs to DB."
+    description = "Posts tweets using Tweepy Client (API v2) - Free Tier Compatible."
 
     def __init__(self):
+        print("\n🔌 INITIALIZING TWITTER V2 CLIENT...") # <--- Look for this log
         try:
-            self.api_key = os.environ["X_API_KEY"]
-            self.api_secret = os.environ["X_API_SECRET"]
-            self.access_token = os.environ["X_ACCESS_TOKEN"]
-            self.access_token_secret = os.environ["X_ACCESS_TOKEN_SECRET"]
+            self.api_key = os.environ.get("X_API_KEY")
+            self.api_secret = os.environ.get("X_API_SECRET")
+            self.access_token = os.environ.get("X_ACCESS_TOKEN")
+            self.access_token_secret = os.environ.get("X_ACCESS_TOKEN_SECRET")
 
+            # Check if keys exist
             if not all([self.api_key, self.api_secret, self.access_token, self.access_token_secret]):
-                raise ValueError("Missing keys")
+                print("❌ Error: Missing Twitter Keys in .env")
+                self.client = None
+                return
 
+            # --- THE WORKING LOGIC (API v2) ---
+            # We use tweepy.Client directly. This allows posting on Free Tier.
             self.client = tweepy.Client(
                 consumer_key=self.api_key,
                 consumer_secret=self.api_secret,
                 access_token=self.access_token,
                 access_token_secret=self.access_token_secret
             )
-            print("TwitterPosterTool initialized.")
+            print("✅ Twitter Client (v2) Ready.", flush=True)
         
         except Exception as e:
-            print(f"Error init TwitterPosterTool: {e}")
+            print(f"❌ Error initializing Twitter Tool: {e}")
             self.client = None
 
     async def run(self, tweet_text: str):
         if self.client is None:
-            return "Error: Client not initialized."
+            return "Error: Twitter Client not initialized."
 
         if not tweet_text or len(tweet_text.strip()) == 0:
             return "Error: Empty tweet."
 
-        # Safai: Agar input mein 'output from...' jaisa kuch aa gaya galti se
+        # Cleaning input just in case
         if "output from" in tweet_text.lower():
-             print("Cleaning input text...")
-             # Yahan hum assume kar rahe hain ki text saaf hai, 
-             # par safety ke liye print kar rahe hain
+             print("⚠️ Cleaning garbage input...", flush=True)
         
-        print(f"Attempting to post: \n{tweet_text}")
+        print(f"\n🚀 Attempting to post:\n---\n{tweet_text}\n---", flush=True)
         
         try:
             loop = asyncio.get_event_loop()
+            
+            # --- POSTING LOGIC ---
+            # This matches the working test script exactly
             response = await loop.run_in_executor(
                 None, 
                 lambda: self.client.create_tweet(text=tweet_text)
             )
             
-            tweet_id = response.data.get('id')
-            success_msg = f"Successfully posted tweet! ID: {tweet_id}"
-            print(success_msg)
+            # Extract ID
+            tweet_id = response.data['id']
+            success_msg = f"✅ SUCCESS! Posted Tweet ID: {tweet_id}"
+            print(success_msg, flush=True)
 
-            # --- DATABASE LOGGING ---
-            # Tweet post hone ke baad use database mein save karo
+            # Log to Firebase
             try:
                 log_tweet(
-                    topic="News Update", # Filhal generic topic rakh rahe hain
+                    topic="News Update", 
                     tweet_text=tweet_text, 
                     tweet_id=str(tweet_id)
                 )
+                print("✅ Saved to Database.", flush=True)
             except Exception as db_e:
-                print(f"Warning: Could not save to DB: {db_e}")
-            # ------------------------
+                print(f"⚠️ DB Log Warning: {db_e}")
 
             return success_msg
 
         except Exception as e:
-            return f"Error posting tweet: {e}"
+            error_msg = f"❌ POST ERROR: {e}"
+            print(error_msg, flush=True)
+            return error_msg

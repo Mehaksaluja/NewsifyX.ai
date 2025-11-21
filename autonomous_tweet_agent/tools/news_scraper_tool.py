@@ -5,7 +5,7 @@ from tools.base_tool import BaseTool
 class NewsScraperTool(BaseTool):
     name = "news_scraper"
     description = "Fetches top 5 current news (title + summary) from Google News RSS."
-    RSS_URL = "https://news.google.com/rss?hl=en-US&gl=US&ceid=IN:en"
+    RSS_URL = "https://news.google.com/rss?hl=en-US&gl=US&ceid=US:en"
 
     async def run(self, input_text: str = ""):
         """
