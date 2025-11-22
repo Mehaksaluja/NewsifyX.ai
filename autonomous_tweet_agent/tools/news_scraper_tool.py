@@ -8,9 +8,6 @@ class NewsScraperTool(BaseTool):
     RSS_URL = "https://news.google.com/rss?hl=en-US&gl=US&ceid=IN:en"
 
     async def run(self, input_text: str = ""):
-        """
-        Fetches and formats title and summary for the top 5 news items.
-        """
         print("Fetching news (with summaries) from Google News RSS...")
         try:
             loop = asyncio.get_event_loop()
@@ -39,7 +36,6 @@ class NewsScraperTool(BaseTool):
             return f"Error: Could not fetch news. {e}"
 
     def clean_html(self, raw_html):
-        """A simple way to clean out HTML tags from the summary."""
         import re
         clean_text = re.sub('<[^<]+?>', '', raw_html)
         clean_text = clean_text.replace("&nbsp;", " ").replace("&quot;", "'")

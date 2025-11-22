@@ -1,8 +1,8 @@
 @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Inter:wght@300;400;600;800&display=swap');
 
 :root {
-  --bg-main: #050505;       /* Deepest Black */
-  --bg-card: #0f0f0f;       /* Slightly Lighter Black */
+  --bg-main: #050505;
+  --bg-card: #0f0f0f;
   --bg-hover: #1a1a1a;
   
   --border-color: #262626;
@@ -12,7 +12,7 @@
   --text-secondary: #a1a1aa;
   --text-muted: #52525b;
 
-  --accent-primary: #3b82f6; /* Electric Blue */
+  --accent-primary: #3b82f6;
   --accent-glow: rgba(59, 130, 246, 0.15);
   
   --status-online: #10b981;
@@ -32,14 +32,12 @@ body {
   min-height: 100vh;
 }
 
-/* --- Layout --- */
 .dashboard-layout {
   display: grid;
-  grid-template-columns: 320px 1fr; /* Sidebar | Main */
+  grid-template-columns: 320px 1fr;
   min-height: 100vh;
 }
 
-/* Sidebar */
 .sidebar {
   background-color: var(--bg-main);
   border-right: 1px solid var(--border-color);
@@ -62,7 +60,6 @@ body {
   color: var(--text-primary);
 }
 
-/* Main Content */
 .main-content {
   padding: 40px;
   background: radial-gradient(circle at top right, #111111 0%, #050505 40%);
@@ -85,7 +82,6 @@ body {
   font-size: 1rem;
 }
 
-/* --- Cards --- */
 .panel {
   background-color: var(--bg-card);
   border: 1px solid var(--border-color);
@@ -111,7 +107,6 @@ body {
   font-weight: 600;
 }
 
-/* --- Controls --- */
 .control-group {
   margin-bottom: 24px;
 }
@@ -124,9 +119,7 @@ body {
   font-weight: 500;
 }
 
-/* Custom Range Slider */
 input[type=range] {
-  -webkit-appearance: none;
   width: 100%;
   background: transparent;
 }
@@ -150,7 +143,6 @@ input[type=range]::-webkit-slider-runnable-track {
   border-radius: 2px;
 }
 
-/* Inputs */
 .input-dark {
   background: #000;
   border: 1px solid var(--border-color);
@@ -167,7 +159,6 @@ input[type=range]::-webkit-slider-runnable-track {
   border-color: var(--accent-primary);
 }
 
-/* Master Switch Button */
 .power-btn {
   width: 100%;
   padding: 16px;
@@ -196,7 +187,6 @@ input[type=range]::-webkit-slider-runnable-track {
   border-color: rgba(239, 68, 68, 0.2);
 }
 
-/* --- Tweet Cards --- */
 .tweet-item {
   border-bottom: 1px solid var(--border-color);
   padding: 24px 0;
@@ -264,7 +254,6 @@ input[type=range]::-webkit-slider-runnable-track {
   color: var(--accent-primary);
 }
 
-/* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
 }
@@ -277,4 +266,93 @@ input[type=range]::-webkit-slider-runnable-track {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+
+.bottom-nav {
+  display: none;
+}
+
+@media (max_width: 768px) {
+  .dashboard-layout {
+    display: block;
+    height: auto;
+    padding-bottom: 80px;
+  }
+
+  .sidebar {
+    position: static;
+    height: auto;
+    width: 100%;
+    border-right: none;
+    background: var(--bg-main);
+    padding: 20px;
+    display: none;
+  }
+
+  .sidebar.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .main-content {
+    padding: 20px 16px;
+    display: none;
+  }
+
+  .main-content.active {
+    display: block;
+    animation: fadeIn 0.3s ease;
+  }
+
+  .page-title {
+    font-size: 1.5rem;
+  }
+  
+  .brand {
+    justify-content: center;
+    margin-bottom: 20px;
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    background: rgba(15, 23, 42, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid var(--border-color);
+    justify-content: space-around;
+    padding: 12px 0;
+    z-index: 1000;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    color: var(--text-secondary);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    cursor: pointer;
+    width: 100%;
+  }
+
+  .nav-item.active {
+    color: var(--accent-primary);
+  }
+
+  .nav-item svg {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }

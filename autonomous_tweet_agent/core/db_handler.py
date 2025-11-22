@@ -10,21 +10,19 @@ def init_firebase():
     global db_client
     if not firebase_admin._apps:
         cred = None
-        
-        # 1. Try loading from Environment Variable (For Cloud/Render)
+
         firebase_json_str = os.environ.get("FIREBASE_CREDENTIALS_JSON")
         if firebase_json_str:
-            print("☁️ Loading Firebase from Environment Variable")
+            print("Loading Firebase from Environment Variable")
             cred_dict = json.loads(firebase_json_str)
             cred = credentials.Certificate(cred_dict)
-        
-        # 2. Try loading from Local File (For Laptop)
+
         elif os.path.exists("firebase_key.json"):
-            print("💻 Loading Firebase from local JSON file")
+            print("Loading Firebase from local JSON file")
             cred = credentials.Certificate("firebase_key.json")
             
         else:
-            print("❌ CRITICAL ERROR: No Firebase credentials found!")
+            print("CRITICAL ERROR: No Firebase credentials found!")
             return None
             
         firebase_admin.initialize_app(cred)
@@ -43,9 +41,9 @@ def log_tweet(topic, tweet_text, tweet_id):
     }
     try:
         db_client.collection("tweets").add(data)
-        print(f"✅ Tweet logged to Firebase: {tweet_id}")
+        print(f"Tweet logged to Firebase: {tweet_id}")
     except Exception as e:
-        print(f"⚠️ DB Log Error: {e}")
+        print(f"DB Log Error: {e}")
 
 def get_bot_config():
     if db_client is None: init_firebase()
@@ -58,14 +56,14 @@ def get_bot_config():
             config_ref.set(default)
             return default
     except Exception as e:
-        print(f"⚠️ Config Read Error: {e}")
-        return {} # Return empty to force defaults in main.py
+        print(f"Config Read Error: {e}")
+        return {}
 
 def turn_off_force_run():
     if db_client is None: init_firebase()
     try:
         config_ref = db_client.collection("bot_config").document("main_settings")
         config_ref.update({"force_run": False})
-        print("✅ Force run flag reset.")
+        print("Force run flag reset.")
     except Exception as e:
-        print(f"⚠️ Error resetting flag: {e}")
+        print(f"Error resetting flag: {e}")

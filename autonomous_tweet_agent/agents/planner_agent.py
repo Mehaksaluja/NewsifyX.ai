@@ -2,10 +2,6 @@ import json
 from core.model_adapter import GroqModelAdapter
 
 class PlannerAgent:
-    """
-    Converts user query into a structured JSON plan.
-    """
-
     def __init__(self):
         self.model = GroqModelAdapter("llama-3.3-70b-versatile")
 
@@ -61,9 +57,6 @@ User request:
                 return {"error": "Failed to create a valid plan."}
 
     def _extract_json(self, text):
-        """
-        Extracts the JSON block, even if it's in a markdown code block.
-        """
         if "```json" in text:
             start = text.find("```json") + 7
             end = text.rfind("```")
