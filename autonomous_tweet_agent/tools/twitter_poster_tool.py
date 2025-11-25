@@ -1,23 +1,24 @@
 import tweepy
 import os
 import asyncio
+import datetime # <-- Date time import kiya
 from tools.base_tool import BaseTool
 from core.db_handler import log_tweet
 
 class TwitterPosterTool(BaseTool):
     name = "twitter_poster"
-    description = "Posts tweets using Tweepy Client (API v2) - Free Tier Compatible."
+    description = "Posts to X using API v2."
 
     def __init__(self):
-        print("\nINITIALIZING TWITTER V2 CLIENT...")
         try:
+            # Load Keys
             self.api_key = os.environ.get("X_API_KEY")
             self.api_secret = os.environ.get("X_API_SECRET")
             self.access_token = os.environ.get("X_ACCESS_TOKEN")
             self.access_token_secret = os.environ.get("X_ACCESS_TOKEN_SECRET")
 
             if not all([self.api_key, self.api_secret, self.access_token, self.access_token_secret]):
-                print("Error: Missing Twitter Keys in .env")
+                print("❌ Error: Missing Keys")
                 self.client = None
                 return
 
@@ -27,52 +28,57 @@ class TwitterPosterTool(BaseTool):
                 access_token=self.access_token,
                 access_token_secret=self.access_token_secret
             )
-            print("Twitter Client (v2) Ready.", flush=True)
+            print("✅ TwitterPosterTool Initialized (Unique Mode).", flush=True)
         
         except Exception as e:
-            print(f"Error initializing Twitter Tool: {e}")
+            print(f"❌ Init Error: {e}", flush=True)
             self.client = None
 
     async def run(self, tweet_text: str):
         if self.client is None:
-            return "Error: Twitter Client not initialized."
-
-        if not tweet_text or len(tweet_text.strip()) == 0:
-            return "Error: Empty tweet."
+            return "Error: Client not initialized."
 
         if "output from" in tweet_text.lower():
-             print("Cleaning garbage input...", flush=True)
+             print("⚠️ Cleaning garbage input...", flush=True)
 
-        print(f"\nAttempting to post:\n---\n{tweet_text}\n---", flush=True)
+        # --- THE DUPLICATE FIX ---
+        # Hum tweet ke end mein aaj ki date aur time jod denge.
+        # Isse text har baar alag ho jayega aur Twitter block nahi karega.
+        
+        now = datetime.datetime.now()
+        timestamp_str = now.strftime("%d-%b %H:%M") # e.g., 25-Nov 14:30
+        
+        # Final Tweet Banate hain
+        final_tweet = f"{tweet_text}\n\n🕒 Update: {timestamp_str}"
+        # -------------------------
+        
+        print(f"\n🚀 Attempting to post:\n---\n{final_tweet}\n---", flush=True)
         
         try:
             loop = asyncio.get_event_loop()
-
+            
             response = await loop.run_in_executor(
                 None, 
-                lambda: self.client.create_tweet(text=tweet_text)
+                lambda: self.client.create_tweet(text=final_tweet)
             )
             
             tweet_id = response.data['id']
-            success_msg = f"SUCCESS! Posted Tweet ID: {tweet_id}"
+            success_msg = f"✅ SUCCESS! Posted Tweet ID: {tweet_id}"
             print(success_msg, flush=True)
 
             try:
-                log_tweet(
-                    topic="News Update", 
-                    tweet_text=tweet_text, 
-                    tweet_id=str(tweet_id)
-                )
-                print("Saved to Database.", flush=True)
-            except Exception as db_e:
-                print(f"DB Log Warning: {db_e}")
+                log_tweet("News Update", final_tweet, str(tweet_id))
+                print("✅ Logged to Firebase.", flush=True)
+            except:
+                pass
 
             return success_msg
 
         except Exception as e:
-            error_msg = f"POST ERROR: {e}"
-            print(error_msg, flush=True)
+            print(f"❌ POST ERROR: {e}", flush=True)
+            
+            # Error Catching
             if "403" in str(e):
-                return "Error 403: Duplicate Tweet detected by Twitter. Try posting different news."
-                
-            return error_msg
+                return "Error 403: Duplicate Content. (Wait for new news or try again later)"
+            
+            return f"Error posting tweet: {e}"

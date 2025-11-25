@@ -9,12 +9,11 @@ const SettingsPanel = () => {
     tweets_per_day: 4,
     active_hours_start: 9,
     active_hours_end: 22,
-    force_run: false // Iski zaroorat padegi status track karne ke liye
+    force_run: false
   });
   const [loading, setLoading] = useState(true);
-  
-  // UI States for Modals
-  const [modalState, setModalState] = useState('idle'); // 'idle', 'confirm', 'processing', 'success'
+
+  const [modalState, setModalState] = useState('idle');
 
   useEffect(() => {
     const configRef = doc(db, "bot_config", "main_settings");
@@ -23,9 +22,6 @@ const SettingsPanel = () => {
         const data = docSnap.data();
         setConfig(data);
 
-        // MAGIC LOGIC:
-        // Agar hum 'processing' mein the, aur ab 'force_run' false ho gaya hai
-        // Iska matlab Python ne kaam khatam kar diya!
         if (modalState === 'processing' && data.force_run === false) {
             setModalState('success');
         }
@@ -35,7 +31,7 @@ const SettingsPanel = () => {
       setLoading(false);
     });
     return () => unsubscribe();
-  }, [modalState]); // modalState dependency zaroori hai
+  }, [modalState]);
 
   const updateConfig = async (key, value) => {
     const configRef = doc(db, "bot_config", "main_settings");
