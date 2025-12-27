@@ -45,7 +45,7 @@ async def run_agent_cycle(planner, controller):
     print("="*50 + "\n")
 
 async def main_logic():
-    print("Loading system...")
+    print("[INIT] Loading system...")
     load_dotenv()
 
     registry = ToolRegistry()
@@ -59,7 +59,8 @@ async def main_logic():
     planner = PlannerAgent()
     controller = ControllerAgent(registry)
 
-    print("Autonomous News Agent is ONLINE.")
+    print("[INIT] Autonomous News Agent is ONLINE.")
+    print("[INIT] All tools registered and ready.")
     next_run_time = datetime.now()
 
     while True:
@@ -70,7 +71,7 @@ async def main_logic():
             config = {"is_active": True, "tweets_per_day": 4, "force_run": False, "active_hours_start": 9, "active_hours_end": 22}
 
         if config.get("force_run", False) == True:
-            print("\nRECEIVED 'POST NOW' COMMAND FROM DASHBOARD! 🚨")
+            print("\n[TRIGGER] RECEIVED 'POST NOW' COMMAND FROM DASHBOARD!")
             try:
                 await run_agent_cycle(planner, controller)
                 
@@ -82,52 +83,57 @@ async def main_logic():
                 interval_seconds = (active_duration * 3600) / freq
                 
                 next_run_time = datetime.now() + timedelta(seconds=interval_seconds)
-                print(f"Forced Run Complete. Schedule reset. Next run: {next_run_time.strftime('%H:%M:%S')}")
+                print(f"[TRIGGER] Forced Run Complete. Schedule reset. Next run: {next_run_time.strftime('%H:%M:%S')}")
                 
             except Exception as e:
-                print(f"Error during Force Run: {e}")
+                print(f"[ERROR] Error during Force Run: {e}")
+                import traceback
+                traceback.print_exc()
                 turn_off_force_run()
             
             continue
 
         if not config.get("is_active", True):
-            print(f"Bot is PAUSED via Dashboard. Checking again in 10s...", end="")
+            print(f"[STATUS] Bot is PAUSED via Dashboard. Checking again in 10s...")
             await asyncio.sleep(10) 
             continue
+        
         current_hour = datetime.now().hour
         start_hour = config.get("active_hours_start", 9)
         end_hour = config.get("active_hours_end", 22)
 
         if current_hour < start_hour or current_hour >= end_hour:
-            print(f"Off-Hours ({current_hour}:00). Active: {start_hour}-{end_hour}. Checking again in 60s...", end="")
+            print(f"[STATUS] Off-Hours ({current_hour}:00). Active hours: {start_hour}-{end_hour}. Checking again in 60s...")
             await asyncio.sleep(60) 
             continue
 
         time_now = datetime.now()
         
+        freq = config.get("tweets_per_day", 4)
+        if freq <= 0: freq = 1
+        
         if time_now >= next_run_time:
             try:
                 await run_agent_cycle(planner, controller)
             except Exception as e:
-                print(f"Critical Error: {e}")
+                print(f"[ERROR] Critical Error: {e}")
+                import traceback
+                traceback.print_exc()
 
             active_duration = end_hour - start_hour
             if active_duration <= 0: active_duration = 12
             
-            freq = config.get("tweets_per_day", 4)
-            if freq <= 0: freq = 1
-            
             interval_seconds = (active_duration * 3600) / freq
             
             next_run_time = datetime.now() + timedelta(seconds=interval_seconds)
-            print(f"Cycle Done. Next run scheduled for: {next_run_time.strftime('%H:%M:%S')}")
+            print(f"[SCHEDULE] Cycle Done. Next run scheduled for: {next_run_time.strftime('%H:%M:%S')}")
             
         else:
             remaining = next_run_time - time_now
             minutes = int(remaining.total_seconds() // 60)
             seconds = int(remaining.total_seconds() % 60)
             
-            print(f"Waiting... Next run in {minutes}m {seconds}s | Config: {freq} tweets/day", end="")
+            print(f"[STATUS] Waiting... Next run in {minutes}m {seconds}s | Config: {freq} tweets/day")
             await asyncio.sleep(10)
 
 if __name__ == "__main__":

@@ -30,6 +30,9 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: hidden;
 }
 
 .dashboard-layout {
@@ -47,6 +50,8 @@ body {
   height: 100vh;
   display: flex;
   flex-direction: column;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .brand {
@@ -172,6 +177,12 @@ input[type=range]::-webkit-slider-runnable-track {
   justify-content: center;
   gap: 10px;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.power-btn:active {
+  transform: scale(0.98);
 }
 
 .power-btn.active {
@@ -248,6 +259,10 @@ input[type=range]::-webkit-slider-runnable-track {
   align-items: center;
   gap: 6px;
   transition: color 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  padding: 4px 0;
+  min-height: 32px;
 }
 
 .action-link:hover {
@@ -272,31 +287,54 @@ input[type=range]::-webkit-slider-runnable-track {
   display: none;
 }
 
-@media (max_width: 768px) {
+@media (max-width: 1024px) {
+  .dashboard-layout {
+    grid-template-columns: 280px 1fr;
+  }
+
+  .main-content {
+    padding: 30px 24px;
+  }
+
+  .sidebar {
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
   .dashboard-layout {
     display: block;
     height: auto;
     padding-bottom: 80px;
+    overflow-x: hidden;
   }
 
   .sidebar {
-    position: static;
-    height: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    height: 100vh;
     width: 100%;
+    max-width: 100%;
     border-right: none;
     background: var(--bg-main);
-    padding: 20px;
+    padding: 16px;
     display: none;
+    overflow-y: auto;
+    z-index: 999;
+    box-shadow: 2px 0 10px rgba(0,0,0,0.3);
   }
 
   .sidebar.active {
-    display: block;
-    animation: fadeIn 0.3s ease;
+    display: flex;
+    animation: slideIn 0.3s ease;
   }
 
   .main-content {
-    padding: 20px 16px;
+    padding: 16px 12px;
     display: none;
+    width: 100%;
+    min-height: calc(100vh - 80px);
   }
 
   .main-content.active {
@@ -304,13 +342,86 @@ input[type=range]::-webkit-slider-runnable-track {
     animation: fadeIn 0.3s ease;
   }
 
+  .header-section {
+    margin-bottom: 24px;
+  }
+
   .page-title {
     font-size: 1.5rem;
+    line-height: 1.2;
+  }
+
+  .page-subtitle {
+    font-size: 0.9rem;
+    margin-top: 6px;
   }
   
   .brand {
     justify-content: center;
     margin-bottom: 20px;
+    font-size: 1.1rem;
+  }
+
+  .panel {
+    padding: 16px;
+    margin-bottom: 16px;
+    border-radius: 12px;
+  }
+
+  .panel-header {
+    font-size: 0.8rem;
+    margin-bottom: 16px;
+  }
+
+  .control-group {
+    margin-bottom: 20px;
+  }
+
+  .power-btn {
+    padding: 14px;
+    font-size: 0.9rem;
+    min-height: 48px;
+  }
+
+  .tweet-item {
+    padding: 16px 0;
+    gap: 12px;
+  }
+
+  .tweet-avatar {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+  }
+
+  .tweet-meta {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .tweet-topic-badge {
+    font-size: 0.7rem;
+    padding: 2px 6px;
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .tweet-body {
+    font-size: 0.9rem;
+    line-height: 1.5;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  .tweet-actions {
+    margin-top: 8px;
+  }
+
+  .action-link {
+    font-size: 0.8rem;
+    padding: 4px 0;
   }
 
   .bottom-nav {
@@ -319,11 +430,11 @@ input[type=range]::-webkit-slider-runnable-track {
     bottom: 0;
     left: 0;
     width: 100%;
-    background: rgba(15, 23, 42, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(5, 5, 5, 0.98);
+    backdrop-filter: blur(20px);
     border-top: 1px solid var(--border-color);
     justify-content: space-around;
-    padding: 12px 0;
+    padding: 8px 0 max(8px, env(safe-area-inset-bottom));
     z-index: 1000;
     box-shadow: 0 -4px 20px rgba(0,0,0,0.5);
   }
@@ -336,10 +447,19 @@ input[type=range]::-webkit-slider-runnable-track {
     flex-direction: column;
     align-items: center;
     gap: 4px;
-    font-size: 0.75rem;
+    font-size: 0.7rem;
     font-weight: 600;
     cursor: pointer;
     width: 100%;
+    padding: 8px 4px;
+    min-height: 64px;
+    justify-content: center;
+    transition: color 0.2s;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .nav-item:active {
+    transform: scale(0.95);
   }
 
   .nav-item.active {
@@ -347,14 +467,127 @@ input[type=range]::-webkit-slider-runnable-track {
   }
 
   .nav-item svg {
-    width: 24px;
-    height: 24px;
+    width: 22px;
+    height: 22px;
+  }
+
+  .modal-card {
+    width: 95%;
+    max-width: 380px;
+    padding: 24px 20px;
+    margin: 16px;
+  }
+
+  .modal-title {
+    font-size: 1.1rem;
+  }
+
+  .modal-desc {
+    font-size: 0.85rem;
+    margin-bottom: 20px;
+  }
+
+  .modal-actions {
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 14px;
+    font-size: 0.9rem;
+    min-height: 44px;
+  }
+
+  .label-row {
+    font-size: 0.85rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .main-content {
+    padding: 12px 8px;
+  }
+
+  .sidebar {
+    padding: 12px;
+  }
+
+  .page-title {
+    font-size: 1.3rem;
+  }
+
+  .page-subtitle {
+    font-size: 0.85rem;
+  }
+
+  .panel {
+    padding: 12px;
+    margin-bottom: 12px;
+  }
+
+  .panel-header {
+    font-size: 0.75rem;
+    margin-bottom: 12px;
+  }
+
+  .power-btn {
+    padding: 12px;
+    font-size: 0.85rem;
+  }
+
+  .tweet-item {
+    padding: 12px 0;
+    gap: 10px;
+  }
+
+  .tweet-avatar {
+    width: 32px;
+    height: 32px;
+  }
+
+  .tweet-body {
+    font-size: 0.85rem;
+  }
+
+  .brand {
+    font-size: 1rem;
+    margin-bottom: 16px;
+  }
+
+  .modal-card {
+    width: 98%;
+    padding: 20px 16px;
+  }
+
+  .modal-title {
+    font-size: 1rem;
+  }
+
+  .modal-desc {
+    font-size: 0.8rem;
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
   }
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(10px); }
-  to { opacity: 1; transform: translateY(0); }
+  from { 
+    opacity: 0; 
+    transform: translateY(10px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
 }
 
 /* --- MODAL SYSTEM --- */

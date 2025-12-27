@@ -29,17 +29,24 @@ class HashtagGeneratorTool(BaseTool):
         print(f"[Debug] HashtagTool context tweet: {tweet_draft}")
 
         prompt = f"""
-You are a hashtag expert. Generate 3-4 highly relevant hashtags.
-Use the Topic, Summary, and Tweet Draft for context.
+You are a social media hashtag expert. Generate 3-4 highly relevant, professional hashtags for a news tweet.
 
 Topic: "{topic}"
 Summary: "{summary}"
 Tweet Draft: "{tweet_draft}"
 
-RULES:
-- Output ONLY 3-4 relevant hashtags.
-- Single line only.
-- Example: #Politics #Immigration #USNews
+INSTRUCTIONS:
+1. Generate exactly 3-4 hashtags that are directly relevant to the news topic.
+2. Use common, widely-recognized hashtags that people actually search for (e.g., #BreakingNews, #WorldNews, #Technology, #Business).
+3. Avoid overly generic hashtags like #News or #Update unless they're truly appropriate.
+4. Use proper capitalization (PascalCase) for multi-word hashtags (e.g., #BreakingNews, #USPolitics).
+5. Keep hashtags concise - no more than 2-3 words per hashtag.
+6. Output ONLY the hashtags separated by spaces, nothing else.
+7. Do not include any explanation, prefix, or additional text.
+
+Example format: #BreakingNews #WorldNews #Technology
+
+Generate the hashtags now:
 """
         
         hashtags = await self.model.generate(prompt)

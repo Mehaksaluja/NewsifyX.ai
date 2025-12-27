@@ -16,7 +16,7 @@ function App() {
 
   return (
     <div className="dashboard-layout">
-      <aside className={`sidebar ${isMobile && activeTab === 'settings' ? 'visible' : ''} ${!isMobile ? 'visible' : ''}`}>
+      <aside className={`sidebar ${isMobile && activeTab === 'settings' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
         
         <div className="brand">
           <Radio color="#3b82f6" /> NEWS.AI
@@ -47,7 +47,7 @@ function App() {
         )}
       </aside>
 
-      <main className={`main-content ${isMobile && activeTab === 'feed' ? 'visible' : ''} ${!isMobile ? 'visible' : ''}`}>
+      <main className={`main-content ${isMobile && activeTab === 'feed' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
         <div className="header-section">
           <h1 className="page-title">Mission Control</h1>
           <p className="page-subtitle">Live feed from autonomous agents.</p>

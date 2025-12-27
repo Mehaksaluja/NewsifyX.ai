@@ -21,8 +21,7 @@ class TweetWriterTool(BaseTool):
         print(f"[Debug] TweetWriter received Summary: {summary}")
 
         prompt = f"""
-You are an AI News Journalist. Write an engaging tweet (2-3 lines) based on this news item.
-Use the Summary to find the *real* story and complete any "..." in the title.
+You are a professional news journalist creating a social media post. Your task is to write a clear, informative, and engaging tweet based on the provided news story.
 
 News Title:
 "{title}"
@@ -30,13 +29,18 @@ News Title:
 News Summary:
 "{summary}"
 
-RULES:
-- Write 2-3 short, engaging lines.
-- Use the Summary to write a *complete* thought. DO NOT end with "...".
-- Add 1-2 relevant emojis.
-- CRITICAL: Do NOT include any hashtags.
+INSTRUCTIONS:
+1. Write a concise, informative tweet (2-3 sentences, maximum 200 characters for the main text).
+2. Use the summary to understand the complete story and write a full, complete thought. Never end with "..." or incomplete sentences.
+3. Write in a natural, conversational tone - like a professional journalist sharing breaking news.
+4. Be factual and accurate. Do not exaggerate or add information not present in the summary.
+5. Use proper grammar, capitalization, and punctuation. Avoid excessive exclamation marks or all caps.
+6. Add 1-2 relevant emojis that match the topic naturally.
+7. CRITICAL: Do NOT include any hashtags in your response. Hashtags will be added separately.
+8. Avoid spam-like patterns: no excessive punctuation (!!!), no all caps, no clickbait language.
+9. Make it sound human and professional, not automated or promotional.
 
-Tweet:
+Write only the tweet text, nothing else:
 """
         
         tweet_text = await self.model.generate(prompt)
