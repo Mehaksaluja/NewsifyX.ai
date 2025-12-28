@@ -15,5 +15,7 @@ firebase-admin
 
 groq
 
+fastapi
+uvicorn[standard]
 gunicorn
 flask
