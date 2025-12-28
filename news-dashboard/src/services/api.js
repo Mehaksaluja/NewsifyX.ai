@@ -22,11 +22,13 @@ class ApiService {
         let errorMessage = `HTTP ${response.status}`;
         try {
           const errorData = await response.json();
-          errorMessage = errorData.error || errorData.detail || errorMessage;
+          errorMessage = errorData.detail || errorData.error || errorData.message || errorMessage;
         } catch {
           errorMessage = response.statusText || errorMessage;
         }
-        throw new Error(errorMessage);
+        const error = new Error(errorMessage);
+        error.status = response.status;
+        throw error;
       }
 
       const data = await response.json();

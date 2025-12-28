@@ -104,18 +104,24 @@ const SettingsPanel = () => {
       
       if (result.success) {
         const tweetId = result.data?.tweet_id;
-        if (tweetId) {
-          try {
-            const tweetsResult = await apiService.getTweets(1);
-            if (tweetsResult.success && tweetsResult.data?.tweets?.length > 0) {
-              const latestTweet = tweetsResult.data.tweets[0];
-              if (latestTweet.tweet_id === tweetId || latestTweet.id) {
-                setPostedTweet(latestTweet);
-              }
+        
+        if (!tweetId) {
+          const errorMsg = 'Tweet was not posted. No tweet ID was returned. This indicates the tweet posting failed.';
+          setConnectionError(errorMsg);
+          setModalState('error');
+          return;
+        }
+        
+        try {
+          const tweetsResult = await apiService.getTweets(1);
+          if (tweetsResult.success && tweetsResult.data?.tweets?.length > 0) {
+            const latestTweet = tweetsResult.data.tweets[0];
+            if (latestTweet.tweet_id === tweetId || latestTweet.id) {
+              setPostedTweet(latestTweet);
             }
-          } catch (e) {
-            console.log("Could not fetch tweet details:", e);
           }
+        } catch (e) {
+          console.log("Could not fetch tweet details:", e);
         }
         setModalState('success');
       } else {
@@ -125,7 +131,22 @@ const SettingsPanel = () => {
       }
     } catch (error) {
       console.error("Error triggering post:", error);
-      const errorMsg = error.message || "Failed to trigger agent. Please try again.";
+      let errorMsg = error.message || "Failed to trigger agent. Please try again.";
+      
+      if (error.message) {
+        if (error.message.includes('detail')) {
+          try {
+            const errorData = JSON.parse(error.message);
+            errorMsg = errorData.detail || error.message;
+          } catch {
+            const detailMatch = error.message.match(/detail["\s:]*["']?([^"'}]+)["']?/i);
+            if (detailMatch && detailMatch[1]) {
+              errorMsg = detailMatch[1];
+            }
+          }
+        }
+      }
+      
       setConnectionError(errorMsg);
       setModalState('error');
     }

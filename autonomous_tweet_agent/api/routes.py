@@ -68,18 +68,25 @@ async def run_agent(background_tasks: BackgroundTasks):
         result = await agent_service.run_agent_cycle()
         
         if result.get("success"):
+            tweet_id = result.get("tweet_id")
+            if not tweet_id:
+                raise HTTPException(
+                    status_code=500,
+                    detail="Tweet was not posted. No tweet ID was returned. This indicates the tweet posting failed."
+                )
             turn_off_force_run()
             return RunAgentResponse(
                 success=True,
                 message=result.get("message", "Agent cycle completed successfully"),
                 timestamp=datetime.now().isoformat(),
                 execution_time=result.get("execution_time"),
-                tweet_id=result.get("tweet_id")
+                tweet_id=tweet_id
             )
         else:
+            error_msg = result.get("error", "Unknown error occurred")
             raise HTTPException(
                 status_code=500,
-                detail=result.get("error", "Unknown error occurred")
+                detail=error_msg
             )
             
     except HTTPException:

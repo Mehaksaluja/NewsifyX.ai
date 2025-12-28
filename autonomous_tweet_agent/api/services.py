@@ -74,16 +74,40 @@ class AgentService:
             execution_time = time.time() - start_time
             
             tweet_id = None
+            error_message = None
+            
             if outputs and len(outputs) > 0:
-                last_output = outputs[-1]
-                if "Success: Tweet posted with ID" in str(last_output):
-                    try:
-                        tweet_id = str(last_output).split("ID ")[1].strip()
-                    except:
-                        pass
+                for output in outputs:
+                    output_str = str(output)
+                    if "Error:" in output_str:
+                        error_message = output_str
+                        print(f"[SERVICE] Error detected in output: {error_message}")
+                        break
+                    elif "Success: Tweet posted with ID" in output_str:
+                        try:
+                            tweet_id = output_str.split("ID ")[1].strip()
+                            print(f"[SERVICE] Tweet posted successfully with ID: {tweet_id}")
+                        except:
+                            pass
 
             print("\n--- CYCLE COMPLETE ---")
             print("="*50 + "\n")
+            
+            if error_message:
+                return {
+                    "success": False,
+                    "error": error_message,
+                    "execution_time": round(execution_time, 2),
+                    "tweet_id": None
+                }
+            
+            if tweet_id is None:
+                return {
+                    "success": False,
+                    "error": "Tweet was not posted. No tweet ID was returned from the Twitter API. Check Twitter API credentials and rate limits.",
+                    "execution_time": round(execution_time, 2),
+                    "tweet_id": None
+                }
             
             return {
                 "success": True,
