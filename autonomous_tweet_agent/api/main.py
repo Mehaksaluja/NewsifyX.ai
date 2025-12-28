@@ -23,8 +23,8 @@ async def lifespan(app: FastAPI):
     print("[API] Shutting down...")
 
 app = FastAPI(
-    title="Autonomous News Agent API",
-    description="API for controlling and monitoring the autonomous news tweeting agent",
+    title="NEWSIFYX.AI API",
+    description="API for controlling and monitoring the NEWSIFYX.AI autonomous news tweeting agent",
     version="1.0.0",
     docs_url="/docs",
     redoc_url="/redoc",
@@ -44,7 +44,7 @@ app.include_router(router, prefix="/api", tags=["API"])
 @app.get("/", tags=["Root"])
 async def root():
     return {
-        "service": "Autonomous News Agent API",
+        "service": "NEWSIFYX.AI API",
         "status": "online",
         "version": "1.0.0",
         "timestamp": datetime.now().isoformat(),

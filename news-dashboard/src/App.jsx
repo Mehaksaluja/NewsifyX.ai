@@ -24,7 +24,7 @@ function App() {
       <aside className={`sidebar ${isMobile && activeTab === 'settings' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
         
         <div className="brand">
-          <Radio color="#3b82f6" /> NEWS.AI
+          <Radio color="#3b82f6" /> NEWSIFYX.AI
         </div>
         
         <div style={{flex: 1}}>

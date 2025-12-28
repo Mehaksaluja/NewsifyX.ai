@@ -22,7 +22,7 @@ const HowToUse = ({ onClose }) => {
       content: (
         <div>
           <p style={{marginBottom: '12px', lineHeight: '1.6'}}>
-            NEWS.AI is an autonomous AI-powered news tweeting system that automatically finds breaking news, 
+            NEWSIFYX.AI is an autonomous AI-powered news tweeting system that automatically finds breaking news, 
             writes engaging tweets, and posts them to X (Twitter) on your behalf.
           </p>
           <p style={{lineHeight: '1.6'}}>
@@ -242,7 +242,7 @@ const HowToUse = ({ onClose }) => {
               fontSize: isMobile ? '1.5rem' : '1.75rem',
               color: '#ededed'
             }}>
-              How to Use NEWS.AI
+              How to Use NEWSIFYX.AI
             </h1>
           </div>
           <button

@@ -1,4 +1,4 @@
-# NewsifyX.ai
+# NEWSIFYX.AI
 
 > **A hybrid edge-cloud AI system that curates global news and broadcasts to X (Twitter) autonomously.**
 

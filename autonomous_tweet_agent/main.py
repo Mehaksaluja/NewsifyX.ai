@@ -20,7 +20,7 @@ app = Flask(__name__)
 
 @app.route('/')
 def home():
-    return "Autonomous News Agent is Running! System Online."
+    return "NEWSIFYX.AI is Running! System Online."
 
 def run_bot_loop():
     loop = asyncio.new_event_loop()
@@ -59,7 +59,7 @@ async def main_logic():
     planner = PlannerAgent()
     controller = ControllerAgent(registry)
 
-    print("[INIT] Autonomous News Agent is ONLINE.")
+    print("[INIT] NEWSIFYX.AI is ONLINE.")
     print("[INIT] All tools registered and ready.")
     next_run_time = datetime.now()
 
