@@ -39,7 +39,10 @@ const HowToUse = ({ onClose }) => {
         <div>
           <ol style={{paddingLeft: '20px', lineHeight: '1.8'}}>
             <li style={{marginBottom: '10px'}}>
-              <strong>Start the Backend Server:</strong> Ensure the FastAPI backend is running on port 8001
+              <strong>Start the Backend Server:</strong> Ensure the FastAPI backend is running and accessible
+            </li>
+            <li style={{marginBottom: '10px'}}>
+              <strong>Configure API URL:</strong> Set <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>VITE_API_URL</code> in <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>.env</code> file with your backend URL
             </li>
             <li style={{marginBottom: '10px'}}>
               <strong>Check API Status:</strong> Look for "API Online" status in the System Health panel
@@ -171,8 +174,9 @@ const HowToUse = ({ onClose }) => {
             </p>
             <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
               <li>Ensure the FastAPI backend server is running</li>
-              <li>Check if the server is on port 8001</li>
+              <li>Check <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>VITE_API_URL</code> in <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>.env</code> file points to correct backend URL</li>
               <li>Verify your network connection</li>
+              <li>Check browser console (F12) for API connection errors</li>
             </ul>
           </div>
           <div style={{marginBottom: '16px'}}>

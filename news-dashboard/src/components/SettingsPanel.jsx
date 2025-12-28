@@ -56,7 +56,7 @@ const SettingsPanel = () => {
       setLoading(false);
     } catch (error) {
       console.error("Error loading config:", error);
-      setConnectionError("Failed to connect to API. Please check if the backend server is running.");
+      setConnectionError("Failed to connect to API. Please check VITE_API_URL in .env file and ensure backend is running.");
       setLoading(false);
     }
   };

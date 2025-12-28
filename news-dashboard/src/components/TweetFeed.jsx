@@ -40,7 +40,7 @@ const TweetFeed = () => {
       setLoading(false);
     } catch (err) {
       console.error("Error loading tweets:", err);
-      const errorMessage = err.message || "Cannot connect to API. Please check if the backend server is running.";
+      const errorMessage = err.message || "Cannot connect to API. Please check VITE_API_URL in .env file and ensure backend is running.";
       setError(errorMessage);
       setLoading(false);
       

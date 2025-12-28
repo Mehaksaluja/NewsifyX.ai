@@ -35,7 +35,7 @@ class ApiService {
       if (error.name === 'TypeError' && error.message.includes('fetch')) {
         return {
           success: false,
-          error: 'Cannot connect to API server. Please ensure the backend is running.',
+          error: 'Cannot connect to API server. Please check VITE_API_URL in .env file and ensure backend is running.',
         };
       }
       console.error(`API Error [${endpoint}]:`, error);
