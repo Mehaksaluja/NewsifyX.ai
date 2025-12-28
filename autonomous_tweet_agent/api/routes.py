@@ -1,4 +1,5 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
+from fastapi.responses import Response
 from datetime import datetime, timedelta
 from typing import List
 from api.models import (
@@ -18,12 +19,28 @@ from core.db_handler import get_bot_config, turn_off_force_run, log_tweet
 router = APIRouter()
 
 @router.get("/health", response_model=HealthResponse, tags=["Health"])
-async def health_check():
+async def health_check_get():
     return HealthResponse(
         status="healthy",
         timestamp=datetime.now().isoformat(),
         agent_initialized=agent_service.is_ready()
     )
+
+@router.post("/health", response_model=HealthResponse, tags=["Health"])
+async def health_check_post():
+    return HealthResponse(
+        status="healthy",
+        timestamp=datetime.now().isoformat(),
+        agent_initialized=agent_service.is_ready()
+    )
+
+@router.head("/health", tags=["Health"])
+async def health_check_head():
+    return Response(status_code=200)
+
+@router.options("/health", tags=["Health"])
+async def health_check_options():
+    return Response(status_code=200, headers={"Allow": "GET, POST, HEAD, OPTIONS"})
 
 @router.get("/status", response_model=AgentStatusResponse, tags=["Status"])
 async def get_status():
