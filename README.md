@@ -155,7 +155,12 @@ AI-News-System/
 4. Set start command: `uvicorn api.main:app --host 0.0.0.0 --port $PORT`
 5. Add environment variables (GROQ_API_KEY, X API keys, Firebase config)
 6. Upload `firebase_key.json` as a secret file
-7. Use UptimeRobot or similar to ping `/api/health` every 5 minutes
+7. **Configure Monitoring Service** (to prevent Render from sleeping):
+   - **Recommended**: Use `/api/ping` or `/` endpoint (lightweight, avoids rate limits)
+   - **Frequency**: Every 10-15 minutes (not every 5 minutes to avoid 429 errors)
+   - **Method**: GET or HEAD
+   - **Services**: UptimeRobot (free tier: 50 monitors, 5 min intervals), Cronitor, or Render's built-in health checks
+   - **Note**: If you get 429 errors, increase the interval to 10-15 minutes or use the `/ping` endpoint
 
 ### Frontend (Vercel/Netlify)
 

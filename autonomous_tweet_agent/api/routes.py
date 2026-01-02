@@ -18,6 +18,17 @@ from core.db_handler import get_bot_config, turn_off_force_run, log_tweet
 
 router = APIRouter()
 
+# Ultra-lightweight ping endpoint for monitoring services (avoids rate limits)
+@router.get("/ping", tags=["Health"])
+async def ping():
+    """Ultra-lightweight endpoint for monitoring services. Returns minimal response."""
+    return Response(status_code=200, content="OK")
+
+@router.head("/ping", tags=["Health"])
+async def ping_head():
+    """HEAD method for ping endpoint."""
+    return Response(status_code=200)
+
 @router.get("/health", response_model=HealthResponse, tags=["Health"])
 async def health_check_get():
     return HealthResponse(

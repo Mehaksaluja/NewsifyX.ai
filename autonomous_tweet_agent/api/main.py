@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, Response
 from contextlib import asynccontextmanager
 from datetime import datetime
 import os
@@ -43,21 +43,13 @@ app.include_router(router, prefix="/api", tags=["API"])
 
 @app.get("/", tags=["Root"])
 async def root():
-    return {
-        "service": "NEWSIFYX.AI API",
-        "status": "online",
-        "version": "1.0.0",
-        "timestamp": datetime.now().isoformat(),
-        "endpoints": {
-            "health": "/api/health",
-            "status": "/api/status",
-            "run_agent": "POST /api/run-agent",
-            "tweets": "/api/tweets",
-            "stats": "/api/stats",
-            "config": "PUT /api/config",
-            "docs": "/docs"
-        }
-    }
+    """Root endpoint - lightweight for monitoring services."""
+    return Response(status_code=200, content="OK")
+
+@app.get("/ping", tags=["Root"])
+async def root_ping():
+    """Lightweight ping endpoint at root level."""
+    return Response(status_code=200, content="OK")
 
 @app.exception_handler(Exception)
 async def global_exception_handler(request, exc):

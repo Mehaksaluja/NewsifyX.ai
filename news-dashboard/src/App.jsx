@@ -33,7 +33,7 @@ function App() {
            <div className="panel" style={{marginTop: '20px', padding: '15px'}}>
               <div className="panel-header" style={{marginBottom:'10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
                 <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                  <BarChart3 size={14}/> System Health
+                <BarChart3 size={14}/> System Health
                 </div>
                 {!healthLoading && (
                   <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
@@ -76,8 +76,8 @@ function App() {
       <main className={`main-content ${isMobile && activeTab === 'feed' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
         <div className="header-section" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
           <div>
-            <h1 className="page-title">Mission Control</h1>
-            <p className="page-subtitle">Live feed from autonomous agents.</p>
+          <h1 className="page-title">Mission Control</h1>
+          <p className="page-subtitle">Live feed from autonomous agents.</p>
           </div>
           <button
             onClick={() => setShowGuide(true)}
