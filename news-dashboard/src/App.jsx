@@ -3,15 +3,22 @@ import './App.css';
 import SettingsPanel from './components/SettingsPanel';
 import TweetFeed from './components/TweetFeed';
 import HowToUse from './components/HowToUse';
+import StatsBar from './components/StatsBar';
 import { useApiHealth, useApiStatus } from './hooks/useApi';
-import { Radio, BarChart3, LayoutList, Settings, Wifi, WifiOff, BookOpen } from 'lucide-react';
+import {
+  LayoutList,
+  Settings,
+  BookOpen,
+  BarChart3,
+  Sparkles,
+} from 'lucide-react';
 
 function App() {
   const [activeTab, setActiveTab] = useState('feed');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showGuide, setShowGuide] = useState(false);
   const { healthy, loading: healthLoading } = useApiHealth();
-  const { online, data: statusData, loading: statusLoading } = useApiStatus();
+  const { data: statusData, loading: statusLoading } = useApiStatus();
 
   useEffect(() => {
     const handleResize = () => setIsMobile(window.innerWidth <= 768);
@@ -20,116 +27,115 @@ function App() {
   }, []);
 
   return (
-    <div className="dashboard-layout">
-      <aside className={`sidebar ${isMobile && activeTab === 'settings' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
-        
-        <div className="brand">
-          <Radio color="#3b82f6" /> NEWSIFYX.AI
-        </div>
-        
-        <div style={{flex: 1}}>
-           <SettingsPanel />
+    <div className="app-shell">
+      <div className="dashboard-layout">
+        <aside
+          className={`sidebar ${isMobile && activeTab === 'settings' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}
+        >
+          <div className="brand">
+            <div className="brand-mark">
+              <Sparkles size={22} color="#fff" strokeWidth={2.5} />
+            </div>
+            <div className="brand-text">
+              <span className="brand-name">NEWSIFYX.AI</span>
+              <span className="brand-tagline">Autonomous broadcast</span>
+            </div>
+          </div>
 
-           <div className="panel" style={{marginTop: '20px', padding: '15px'}}>
-              <div className="panel-header" style={{marginBottom:'10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-                <div style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                <BarChart3 size={14}/> System Health
+          <div className="sidebar-scroll">
+            <SettingsPanel />
+
+            <div className="glass-card glass-card--compact">
+              <div className="panel-header" style={{ marginBottom: 12 }}>
+                <div className="panel-header__left">
+                  <div className="panel-header__icon">
+                    <BarChart3 size={16} />
+                  </div>
+                  <h2 className="panel-title">System health</h2>
                 </div>
-                {!healthLoading && (
-                  <div style={{display: 'flex', alignItems: 'center', gap: '4px'}}>
-                    {healthy ? (
-                      <Wifi size={12} color="#10b981" />
-                    ) : (
-                      <WifiOff size={12} color="#ef4444" />
-                    )}
+              </div>
+              <div className="health-list">
+                <div className="health-row">
+                  <span className="health-row__label">API</span>
+                  {healthLoading ? (
+                    <span className="health-row__label">Checking…</span>
+                  ) : (
+                    <span className={`status-pill ${healthy ? 'status-pill--online' : 'status-pill--offline'}`}>
+                      {healthy ? 'Online' : 'Offline'}
+                    </span>
+                  )}
+                </div>
+                <div className="health-row">
+                  <span className="health-row__label">Agent</span>
+                  {statusLoading ? (
+                    <span className="health-row__label">Loading…</span>
+                  ) : (
+                    <span
+                      className={`status-pill ${statusData?.is_active ? 'status-pill--active' : 'status-pill--paused'}`}
+                    >
+                      {statusData?.is_active ? 'Active' : 'Paused'}
+                    </span>
+                  )}
+                </div>
+                {statusData && (
+                  <div className="health-row">
+                    <span className="health-row__label">Frequency</span>
+                    <span style={{ fontFamily: 'var(--font-mono)', fontSize: '0.85rem', color: 'var(--accent-bright)' }}>
+                      {statusData.tweets_per_day || 0}/day
+                    </span>
                   </div>
                 )}
               </div>
-              <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.9rem', marginBottom:'8px'}}>
-                 <span style={{color:'#666'}}>API Status</span>
-                 <span style={{color: healthy ? '#10b981' : '#ef4444'}}>
-                   {healthLoading ? 'Checking...' : healthy ? 'Online' : 'Offline'}
-                 </span>
-              </div>
-              <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.9rem', marginBottom:'8px'}}>
-                 <span style={{color:'#666'}}>Agent Status</span>
-                 <span style={{color: statusData?.is_active ? '#3b82f6' : '#f59e0b'}}>
-                   {statusLoading ? 'Loading...' : statusData?.is_active ? 'Active' : 'Paused'}
-                 </span>
-              </div>
-              {statusData && (
-                <div style={{display:'flex', justifyContent:'space-between', fontSize:'0.9rem'}}>
-                   <span style={{color:'#666'}}>Frequency</span>
-                   <span style={{color:'#3b82f6'}}>{statusData.tweets_per_day || 0}/day</span>
-                </div>
-              )}
-           </div>
-        </div>
-
-        {!isMobile && (
-          <div style={{fontSize: '0.8rem', color: '#333'}}>
-            v1.0.4 • Edge Node
+            </div>
           </div>
-        )}
-      </aside>
 
-      <main className={`main-content ${isMobile && activeTab === 'feed' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}>
-        <div className="header-section" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-          <div>
-          <h1 className="page-title">Mission Control</h1>
-          <p className="page-subtitle">Live feed from autonomous agents.</p>
-          </div>
+          {!isMobile && (
+            <div className="sidebar-footer">v1.0.4 · Mission control</div>
+          )}
+        </aside>
+
+        <main
+          className={`main-content ${isMobile && activeTab === 'feed' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}
+        >
+          <header className="page-header">
+            <div>
+              <h1 className="page-title">Mission Control</h1>
+              <p className="page-subtitle">
+                Monitor autonomous news curation and live broadcasts to X in real time.
+              </p>
+            </div>
+            <button type="button" className="btn btn-ghost" onClick={() => setShowGuide(true)}>
+              <BookOpen size={18} />
+              <span>Guide</span>
+            </button>
+          </header>
+
+          <StatsBar statusData={statusData} healthy={healthy} healthLoading={healthLoading} />
+
+          <TweetFeed />
+        </main>
+
+        {showGuide && <HowToUse onClose={() => setShowGuide(false)} />}
+
+        <nav className="bottom-nav" aria-label="Mobile navigation">
           <button
-            onClick={() => setShowGuide(true)}
-            style={{
-              background: 'rgba(59, 130, 246, 0.1)',
-              border: '1px solid rgba(59, 130, 246, 0.3)',
-              borderRadius: '10px',
-              padding: isMobile ? '10px 14px' : '12px 18px',
-              color: '#3b82f6',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '8px',
-              fontSize: isMobile ? '0.85rem' : '0.9rem',
-              fontWeight: 500,
-              transition: 'all 0.2s'
-            }}
-            onMouseEnter={(e) => {
-              e.target.style.background = 'rgba(59, 130, 246, 0.2)';
-            }}
-            onMouseLeave={(e) => {
-              e.target.style.background = 'rgba(59, 130, 246, 0.1)';
-            }}
+            type="button"
+            className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}
+            onClick={() => setActiveTab('feed')}
           >
-            <BookOpen size={isMobile ? 16 : 18} />
-            <span>How to Use</span>
+            <LayoutList size={22} />
+            <span>Feed</span>
           </button>
-        </div>
-
-        <TweetFeed />
-      </main>
-
-      {showGuide && <HowToUse onClose={() => setShowGuide(false)} />}
-
-      <div className="bottom-nav">
-        <button 
-          className={`nav-item ${activeTab === 'feed' ? 'active' : ''}`}
-          onClick={() => setActiveTab('feed')}
-        >
-          <LayoutList size={24} />
-          <span>Live Feed</span>
-        </button>
-
-        <button 
-          className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
-          onClick={() => setActiveTab('settings')}
-        >
-          <Settings size={24} />
-          <span>Controls</span>
-        </button>
+          <button
+            type="button"
+            className={`nav-item ${activeTab === 'settings' ? 'active' : ''}`}
+            onClick={() => setActiveTab('settings')}
+          >
+            <Settings size={22} />
+            <span>Controls</span>
+          </button>
+        </nav>
       </div>
-
     </div>
   );
 }

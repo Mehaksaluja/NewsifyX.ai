@@ -1,37 +1,23 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
-import { Activity, ExternalLink, Twitter, RefreshCw, AlertCircle } from 'lucide-react';
+import { Activity, ExternalLink, RefreshCw, AlertCircle, Inbox } from 'lucide-react';
 
 const TweetFeed = () => {
   const [tweets, setTweets] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 480);
   const [lastRefresh, setLastRefresh] = useState(null);
   const [retryCount, setRetryCount] = useState(0);
 
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setIsSmallMobile(window.innerWidth <= 480);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
   const loadTweets = async (isRetry = false) => {
     try {
-      if (!isRetry) {
-        setLoading(true);
-      }
+      if (!isRetry) setLoading(true);
       setError(null);
-      
+
       const result = await apiService.getTweets(10);
-      
+
       if (result.success) {
-        const tweetData = result.data.tweets || [];
-        setTweets(tweetData);
+        setTweets(result.data.tweets || []);
         setLastRefresh(new Date());
         setRetryCount(0);
       } else {
@@ -39,14 +25,16 @@ const TweetFeed = () => {
       }
       setLoading(false);
     } catch (err) {
-      console.error("Error loading tweets:", err);
-      const errorMessage = err.message || "Cannot connect to API. Please check VITE_API_URL in .env file and ensure backend is running.";
-      setError(errorMessage);
+      console.error('Error loading tweets:', err);
+      setError(
+        err.message ||
+          'Cannot connect to API. Check VITE_API_URL and ensure the backend is running.'
+      );
       setLoading(false);
-      
+
       if (retryCount < 3) {
         setTimeout(() => {
-          setRetryCount(prev => prev + 1);
+          setRetryCount((prev) => prev + 1);
           loadTweets(true);
         }, 5000);
       }
@@ -73,95 +61,63 @@ const TweetFeed = () => {
         month: 'short',
         day: 'numeric',
         hour: '2-digit',
-        minute: '2-digit'
+        minute: '2-digit',
       });
     } catch {
       return dateString;
     }
   };
 
+  const truncateTopic = (topic, max = 48) => {
+    if (!topic) return 'News update';
+    return topic.length > max ? `${topic.slice(0, max)}…` : topic;
+  };
+
   return (
-    <div className="panel" style={{minHeight: isMobile ? '400px' : '500px'}}>
-      <div className="panel-header" style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center'}}>
-        <div style={{display: 'flex', alignItems: 'center', gap: '10px'}}>
-          <Activity size={14} /> Live Activity Log
+    <section className="glass-card feed-card" aria-label="Live activity feed">
+      <div className="panel-header">
+        <div className="panel-header__left">
+          <div className="panel-header__icon">
+            <Activity size={16} />
+          </div>
+          <div>
+            <h2 className="panel-title panel-title--lg">Live activity</h2>
+            <p className="feed-meta" style={{ margin: '4px 0 0' }}>
+              Auto-refreshes every 30s
+            </p>
+          </div>
         </div>
-        <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
+        <div className="feed-toolbar">
           {lastRefresh && !error && (
-            <span style={{
-              fontSize: '0.7rem',
-              color: '#a1a1aa',
-              whiteSpace: 'nowrap'
-            }}>
-              {lastRefresh.toLocaleTimeString()}
-            </span>
+            <span className="feed-meta">{lastRefresh.toLocaleTimeString()}</span>
           )}
           <button
+            type="button"
+            className={`icon-btn ${loading ? 'icon-btn--spin' : ''}`}
             onClick={handleRefresh}
             disabled={loading}
-            style={{
-              background: 'none',
-              border: 'none',
-              color: loading ? '#52525b' : '#a1a1aa',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              padding: '4px',
-              display: 'flex',
-              alignItems: 'center',
-              transition: 'color 0.2s',
-              opacity: loading ? 0.5 : 1
-            }}
-            title="Refresh"
+            title="Refresh feed"
+            aria-label="Refresh feed"
           >
-            <RefreshCw size={14} style={{animation: loading ? 'spin 1s linear infinite' : 'none'}} />
+            <RefreshCw size={16} />
           </button>
         </div>
       </div>
 
       {error && (
-        <div style={{
-          padding: isSmallMobile ? '12px' : '14px',
-          marginBottom: '16px',
-          background: 'rgba(239, 68, 68, 0.15)',
-          border: '1px solid rgba(239, 68, 68, 0.4)',
-          borderRadius: '10px',
-          color: '#ef4444',
-          fontSize: isSmallMobile ? '0.8rem' : '0.875rem',
-          wordWrap: 'break-word',
-          display: 'flex',
-          gap: '12px',
-          alignItems: 'flex-start',
-          boxShadow: '0 2px 8px rgba(239, 68, 68, 0.1)'
-        }}>
-          <AlertCircle size={isSmallMobile ? 18 : 20} style={{flexShrink: 0, marginTop: '2px'}} />
-          <div style={{flex: 1, lineHeight: '1.5'}}>
-            <div style={{display: 'flex', alignItems: 'center', gap: '6px', marginBottom: '6px'}}>
-              <strong style={{fontSize: isSmallMobile ? '0.85rem' : '0.9rem'}}>Connection Error</strong>
-            </div>
-            <div style={{fontSize: isSmallMobile ? '0.75rem' : '0.8rem', opacity: 0.95, marginBottom: retryCount > 0 ? '8px' : '0'}}>
-              {error}
-            </div>
+        <div className="alert alert--error" role="alert">
+          <AlertCircle size={20} style={{ flexShrink: 0, marginTop: 2 }} />
+          <div style={{ flex: 1 }}>
+            <div className="alert__title">Connection error</div>
+            <div>{error}</div>
             {retryCount > 0 && retryCount < 3 && (
-              <div style={{
-                fontSize: '0.75rem',
-                marginTop: '8px',
-                padding: '6px 10px',
-                background: 'rgba(239, 68, 68, 0.1)',
-                borderRadius: '6px',
-                display: 'inline-block'
-              }}>
-                Retrying... ({retryCount}/3)
+              <div className="hint-text" style={{ textAlign: 'left', marginTop: 8 }}>
+                Retrying… ({retryCount}/3)
               </div>
             )}
             {retryCount >= 3 && (
-              <div style={{
-                fontSize: '0.75rem',
-                marginTop: '8px',
-                padding: '6px 10px',
-                background: 'rgba(239, 68, 68, 0.1)',
-                borderRadius: '6px',
-                display: 'inline-block'
-              }}>
-                Max retries reached. Click refresh to try again.
+              <div className="hint-text" style={{ textAlign: 'left', marginTop: 8 }}>
+                Max retries reached. Use refresh to try again.
               </div>
             )}
           </div>
@@ -169,81 +125,52 @@ const TweetFeed = () => {
       )}
 
       {loading && tweets.length === 0 ? (
-        <div style={{
-          padding: isSmallMobile ? '30px 20px' : '40px',
-          textAlign: 'center',
-          color: '#333'
-        }}>
-          <div style={{marginBottom: '10px'}}>
-            <RefreshCw size={24} style={{animation: 'spin 1s linear infinite', display: 'inline-block'}} />
-          </div>
-          Loading tweets...
+        <div className="skeleton-list" aria-busy="true" aria-label="Loading tweets">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="skeleton-card" />
+          ))}
         </div>
       ) : !loading && tweets.length === 0 && !error ? (
-        <div style={{
-          padding: isSmallMobile ? '30px 20px' : '40px',
-          textAlign: 'center',
-          color: '#333'
-        }}>
-          <AlertCircle size={32} style={{marginBottom: '12px', opacity: 0.5, display: 'block', margin: '0 auto 12px'}} />
-          No activity recorded yet.
-          <div style={{fontSize: '0.85rem', color: '#666', marginTop: '8px'}}>
-            Tweets will appear here once the agent posts.
-          </div>
+        <div className="state-box">
+          <Inbox size={48} className="state-box__icon" />
+          <p className="state-box__title">No broadcasts yet</p>
+          <p className="state-box__desc">
+            Posted tweets will appear here once the agent completes its first cycle.
+          </p>
         </div>
       ) : (
-        <div style={{opacity: loading ? 0.6 : 1, transition: 'opacity 0.3s'}}>
+        <div className="tweet-list" style={{ opacity: loading ? 0.65 : 1, transition: 'opacity 0.3s' }}>
           {tweets.map((tweet) => (
-            <div key={tweet.id || tweet.tweet_id} className="tweet-item">
-              <div className="tweet-avatar">
-                <Twitter size={isSmallMobile ? 18 : 20} />
+            <article key={tweet.id || tweet.tweet_id} className="tweet-card">
+              <div className="tweet-card__avatar" aria-hidden="true">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+                </svg>
               </div>
-              <div className="tweet-content">
-                <div className="tweet-meta">
-                  <span className="tweet-topic-badge" style={{
-                    maxWidth: isSmallMobile ? '60%' : 'none'
-                  }}>
-                    {tweet.topic ? (isSmallMobile ? tweet.topic.substring(0, 30) + "..." : tweet.topic.substring(0, 50) + "...") : "Update"}
-                  </span>
-                  <span style={{
-                    fontSize: isSmallMobile ? '0.75rem' : '0.8rem',
-                    color: '#52525b',
-                    whiteSpace: 'nowrap'
-                  }}>
+              <div className="tweet-card__body">
+                <div className="tweet-card__meta">
+                  <span className="tweet-topic">{truncateTopic(tweet.topic)}</span>
+                  <time className="tweet-time" dateTime={tweet.created_at || tweet.timestamp}>
                     {formatDate(tweet.created_at || tweet.timestamp)}
-                  </span>
+                  </time>
                 </div>
-                
-                <div className="tweet-body" style={{
-                  wordBreak: 'break-word',
-                  overflowWrap: 'break-word'
-                }}>
-                  {tweet.tweet_text || tweet.text || 'No content'}
-                </div>
-
+                <p className="tweet-text">{tweet.tweet_text || tweet.text || 'No content'}</p>
                 {tweet.tweet_id && (
-                  <div className="tweet-actions">
-                    <a 
-                      href={`https://x.com/i/web/status/${tweet.tweet_id}`} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="action-link"
-                      style={{
-                        minHeight: isSmallMobile ? '36px' : 'auto',
-                        display: 'inline-flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      View Live Post <ExternalLink size={isSmallMobile ? 10 : 12}/>
-                    </a>
-                  </div>
+                  <a
+                    href={`https://x.com/i/web/status/${tweet.tweet_id}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="tweet-link"
+                  >
+                    View on X <ExternalLink size={12} />
+                  </a>
                 )}
               </div>
-            </div>
+            </article>
           ))}
         </div>
       )}
-    </div>
+    </section>
   );
 };
 

@@ -1,344 +1,180 @@
 import React, { useState } from 'react';
-import { BookOpen, ChevronRight, X, Zap, Settings, Activity, Clock, Power, RefreshCw, ExternalLink } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  X,
+  Zap,
+  Settings,
+  Activity,
+  Clock,
+  Power,
+  RefreshCw,
+} from 'lucide-react';
 
 const HowToUse = ({ onClose }) => {
-  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  const [isSmallMobile, setIsSmallMobile] = useState(window.innerWidth <= 480);
-
-  React.useEffect(() => {
-    const handleResize = () => {
-      setIsMobile(window.innerWidth <= 768);
-      setIsSmallMobile(window.innerWidth <= 480);
-    };
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
+  const [expandedSection, setExpandedSection] = useState('overview');
 
   const sections = [
     {
       id: 'overview',
       title: 'Overview',
-      icon: <BookOpen size={20} />,
+      icon: <BookOpen size={18} />,
       content: (
-        <div>
-          <p style={{marginBottom: '12px', lineHeight: '1.6'}}>
-            NEWSIFYX.AI is an autonomous AI-powered news tweeting system that automatically finds breaking news, 
-            writes engaging tweets, and posts them to X (Twitter) on your behalf.
+        <>
+          <p>
+            NEWSIFYX.AI is an autonomous system that curates global news, drafts engaging posts with
+            Groq LLM, and broadcasts to X on your schedule.
           </p>
-          <p style={{lineHeight: '1.6'}}>
-            The system runs continuously, monitoring news sources and posting updates based on your configured schedule.
+          <p style={{ marginTop: 12 }}>
+            Use this dashboard to monitor activity, adjust frequency, and trigger manual posts.
           </p>
-        </div>
-      )
+        </>
+      ),
     },
     {
       id: 'getting-started',
-      title: 'Getting Started',
-      icon: <Zap size={20} />,
+      title: 'Getting started',
+      icon: <Zap size={18} />,
       content: (
-        <div>
-          <ol style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-            <li style={{marginBottom: '10px'}}>
-              <strong>Start the Backend Server:</strong> Ensure the FastAPI backend is running and accessible
-            </li>
-            <li style={{marginBottom: '10px'}}>
-              <strong>Configure API URL:</strong> Set <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>VITE_API_URL</code> in <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>.env</code> file with your backend URL
-            </li>
-            <li style={{marginBottom: '10px'}}>
-              <strong>Check API Status:</strong> Look for "API Online" status in the System Health panel
-            </li>
-            <li style={{marginBottom: '10px'}}>
-              <strong>Configure Settings:</strong> Set your preferred posting frequency and active hours
-            </li>
-            <li style={{marginBottom: '10px'}}>
-              <strong>Activate System:</strong> Toggle "SYSTEM ONLINE" to start automatic posting
-            </li>
-          </ol>
-        </div>
-      )
+        <ol>
+          <li>Start the FastAPI backend (<code>uvicorn api.main:app</code>)</li>
+          <li>Set <code>VITE_API_URL</code> in <code>news-dashboard/.env</code></li>
+          <li>Confirm API shows <strong>Online</strong> in System health</li>
+          <li>Configure frequency and toggle <strong>System online</strong></li>
+          <li>Use <strong>Trigger post now</strong> to test before going live</li>
+        </ol>
+      ),
     },
     {
       id: 'controls',
-      title: 'Control Panel',
-      icon: <Settings size={20} />,
+      title: 'Agent controls',
+      icon: <Settings size={18} />,
       content: (
-        <div>
-          <div style={{marginBottom: '16px'}}>
-            <h4 style={{marginBottom: '8px', color: '#3b82f6'}}>System Status</h4>
-            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li><strong>SYSTEM ONLINE:</strong> Activates automatic scheduled posting</li>
-              <li><strong>SYSTEM PAUSED:</strong> Stops automatic posting (manual trigger still works)</li>
-            </ul>
-          </div>
-          <div style={{marginBottom: '16px'}}>
-            <h4 style={{marginBottom: '8px', color: '#3b82f6'}}>Frequency Slider</h4>
-            <p style={{lineHeight: '1.6'}}>
-              Adjust how many tweets to post per day (1-12). The system automatically calculates posting intervals 
-              based on your active hours.
-            </p>
-          </div>
-          <div>
-            <h4 style={{marginBottom: '8px', color: '#3b82f6'}}>Manual Trigger</h4>
-            <p style={{lineHeight: '1.6'}}>
-              Click "TRIGGER POST NOW" to immediately find news and post a tweet. This works even when the system is paused.
-            </p>
-          </div>
-        </div>
-      )
+        <>
+          <h4>System status</h4>
+          <ul>
+            <li><strong>System online</strong> — automatic scheduled posting</li>
+            <li><strong>System paused</strong> — stops schedule; manual trigger still works</li>
+          </ul>
+          <h4>Frequency</h4>
+          <p>Choose 1–12 tweets per day. Posts are spread across your active hours.</p>
+          <h4>Manual trigger</h4>
+          <p>Runs a full agent cycle immediately — scrape, select, write, hashtag, post.</p>
+        </>
+      ),
     },
     {
       id: 'live-feed',
-      title: 'Live Activity Feed',
-      icon: <Activity size={20} />,
+      title: 'Live activity',
+      icon: <Activity size={18} />,
       content: (
-        <div>
-          <p style={{marginBottom: '12px', lineHeight: '1.6'}}>
-            The Live Feed shows all tweets posted by the AI agent in reverse chronological order (newest first).
-          </p>
-          <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-            <li>View the last 10 posted tweets</li>
-            <li>See tweet content, topic, and timestamp</li>
-            <li>Click "View Live Post" to open the tweet on X</li>
-            <li>Auto-refreshes every 30 seconds</li>
-            <li>Manual refresh button available</li>
-          </ul>
-        </div>
-      )
+        <ul>
+          <li>Last 10 posted tweets, newest first</li>
+          <li>Topic, content, and timestamp for each</li>
+          <li>Open any post on X via <strong>View on X</strong></li>
+          <li>Auto-refresh every 30 seconds</li>
+        </ul>
+      ),
     },
     {
       id: 'posting',
-      title: 'How Posting Works',
-      icon: <Clock size={20} />,
+      title: 'How posting works',
+      icon: <Clock size={18} />,
       content: (
-        <div>
-          <div style={{marginBottom: '16px'}}>
-            <h4 style={{marginBottom: '8px', color: '#3b82f6'}}>Automatic Posting</h4>
-            <ol style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li>System finds top news stories from reliable sources</li>
-              <li>AI selects the most interesting story</li>
-              <li>AI writes an engaging tweet (2-3 sentences)</li>
-              <li>Relevant hashtags are generated</li>
-              <li>Tweet is posted to X (Twitter)</li>
-              <li>Posted tweet appears in Live Feed</li>
-            </ol>
-          </div>
-          <div>
-            <h4 style={{marginBottom: '8px', color: '#3b82f6'}}>Active Hours</h4>
-            <p style={{lineHeight: '1.6'}}>
-              The system only posts during your configured active hours (default: 9 AM - 10 PM). 
-              Posts are distributed evenly throughout the active period based on your frequency setting.
-            </p>
-          </div>
-        </div>
-      )
+        <>
+          <h4>Automatic flow</h4>
+          <ol>
+            <li>Scrape top news from RSS sources</li>
+            <li>AI picks the most compelling story</li>
+            <li>Write tweet + generate hashtags</li>
+            <li>Post to X and log to Firebase</li>
+          </ol>
+          <h4>Active hours</h4>
+          <p>
+            By default the agent posts between 9 AM and 10 PM. Intervals are calculated from your
+            frequency setting.
+          </p>
+        </>
+      ),
     },
     {
       id: 'tips',
-      title: 'Tips & Best Practices',
-      icon: <Power size={20} />,
+      title: 'Tips',
+      icon: <Power size={18} />,
       content: (
-        <div>
-          <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-            <li style={{marginBottom: '8px'}}>
-              <strong>Start with lower frequency:</strong> Begin with 2-4 tweets/day to test the system
-            </li>
-            <li style={{marginBottom: '8px'}}>
-              <strong>Monitor the Live Feed:</strong> Check posted tweets to ensure quality
-            </li>
-            <li style={{marginBottom: '8px'}}>
-              <strong>Use manual trigger:</strong> Test the system before enabling automatic posting
-            </li>
-            <li style={{marginBottom: '8px'}}>
-              <strong>Check API status:</strong> Ensure backend is running for the dashboard to work
-            </li>
-            <li style={{marginBottom: '8px'}}>
-              <strong>Refresh if needed:</strong> Use refresh buttons to manually update data
-            </li>
-            <li>
-              <strong>Pause when needed:</strong> Toggle system off if you want to stop automatic posting temporarily
-            </li>
-          </ul>
-        </div>
-      )
+        <ul>
+          <li>Start with 2–4 tweets/day while tuning quality</li>
+          <li>Review the live feed regularly</li>
+          <li>Test with manual trigger before enabling automation</li>
+          <li>Pause the system when you need a break from posting</li>
+        </ul>
+      ),
     },
     {
       id: 'troubleshooting',
       title: 'Troubleshooting',
-      icon: <RefreshCw size={20} />,
+      icon: <RefreshCw size={18} />,
       content: (
-        <div>
-          <div style={{marginBottom: '16px'}}>
-            <h4 style={{marginBottom: '8px', color: '#ef4444'}}>API Offline</h4>
-            <p style={{lineHeight: '1.6', marginBottom: '8px'}}>
-              If you see "API Offline" error:
-            </p>
-            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li>Ensure the FastAPI backend server is running</li>
-              <li>Check <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>VITE_API_URL</code> in <code style={{background: 'rgba(59, 130, 246, 0.1)', padding: '2px 6px', borderRadius: '4px'}}>.env</code> file points to correct backend URL</li>
-              <li>Verify your network connection</li>
-              <li>Check browser console (F12) for API connection errors</li>
-            </ul>
-          </div>
-          <div style={{marginBottom: '16px'}}>
-            <h4 style={{marginBottom: '8px', color: '#ef4444'}}>No Tweets Appearing</h4>
-            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li>Check if system is set to "SYSTEM ONLINE"</li>
-              <li>Verify active hours include current time</li>
-              <li>Wait for the next scheduled post time</li>
-              <li>Try manual trigger to test</li>
-            </ul>
-          </div>
-          <div>
-            <h4 style={{marginBottom: '8px', color: '#ef4444'}}>Errors During Posting</h4>
-            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li>Check error message in the modal</li>
-              <li>Verify Twitter API credentials are configured</li>
-              <li>Check Firebase connection</li>
-              <li>Use "Retry" button to try again</li>
-            </ul>
-          </div>
-        </div>
-      )
-    }
+        <>
+          <h4 style={{ color: 'var(--danger)' }}>API offline</h4>
+          <ul>
+            <li>Ensure backend is running on the URL in <code>VITE_API_URL</code></li>
+            <li>Check browser console (F12) for CORS or network errors</li>
+          </ul>
+          <h4 style={{ color: 'var(--danger)' }}>No tweets appearing</h4>
+          <ul>
+            <li>Confirm system is <strong>online</strong></li>
+            <li>Current time must fall within active hours</li>
+            <li>Try a manual trigger to verify the pipeline</li>
+          </ul>
+        </>
+      ),
+    },
   ];
 
-  const [expandedSection, setExpandedSection] = useState('overview');
-
   return (
-    <div style={{
-      position: 'fixed',
-      top: 0,
-      left: 0,
-      right: 0,
-      bottom: 0,
-      background: 'rgba(0, 0, 0, 0.8)',
-      backdropFilter: 'blur(5px)',
-      zIndex: 1000,
-      overflowY: 'auto',
-      padding: isMobile ? '20px 10px' : '40px 20px'
-    }}>
-      <div style={{
-        maxWidth: '800px',
-        margin: '0 auto',
-        background: '#0f0f0f',
-        border: '1px solid #262626',
-        borderRadius: '16px',
-        padding: isMobile ? '20px' : '30px',
-        boxShadow: '0 20px 50px rgba(0,0,0,0.5)',
-        position: 'relative'
-      }}>
-        <div style={{
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center',
-          marginBottom: '24px',
-          paddingBottom: '20px',
-          borderBottom: '1px solid #262626'
-        }}>
-          <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-            <BookOpen size={24} color="#3b82f6" />
-            <h1 style={{
-              margin: 0,
-              fontSize: isMobile ? '1.5rem' : '1.75rem',
-              color: '#ededed'
-            }}>
-              How to Use NEWSIFYX.AI
-            </h1>
-          </div>
-          <button
-            onClick={onClose}
-            style={{
-              background: 'rgba(239, 68, 68, 0.1)',
-              border: '1px solid rgba(239, 68, 68, 0.3)',
-              borderRadius: '8px',
-              padding: '8px',
-              color: '#ef4444',
-              cursor: 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center'
-            }}
-          >
-            <X size={20} />
-          </button>
-        </div>
-
-        <div style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: '12px'
-        }}>
-          {sections.map((section) => (
-            <div
-              key={section.id}
-              style={{
-                background: '#1a1a1a',
-                border: '1px solid #262626',
-                borderRadius: '12px',
-                overflow: 'hidden',
-                transition: 'all 0.3s'
-              }}
-            >
-              <button
-                onClick={() => setExpandedSection(expandedSection === section.id ? null : section.id)}
-                style={{
-                  width: '100%',
-                  padding: isMobile ? '16px' : '20px',
-                  background: 'none',
-                  border: 'none',
-                  color: '#ededed',
-                  cursor: 'pointer',
-                  display: 'flex',
-                  justifyContent: 'space-between',
-                  alignItems: 'center',
-                  textAlign: 'left'
-                }}
-              >
-                <div style={{display: 'flex', alignItems: 'center', gap: '12px'}}>
-                  <div style={{color: '#3b82f6'}}>{section.icon}</div>
-                  <h3 style={{
-                    margin: 0,
-                    fontSize: isMobile ? '1rem' : '1.1rem',
-                    fontWeight: 600
-                  }}>
-                    {section.title}
-                  </h3>
-                </div>
-                <ChevronRight
-                  size={20}
-                  style={{
-                    transform: expandedSection === section.id ? 'rotate(90deg)' : 'rotate(0deg)',
-                    transition: 'transform 0.3s',
-                    color: '#a1a1aa'
-                  }}
-                />
-              </button>
-              {expandedSection === section.id && (
-                <div style={{
-                  padding: isMobile ? '0 16px 16px' : '0 20px 20px',
-                  color: '#a1a1aa',
-                  fontSize: isMobile ? '0.875rem' : '0.9rem',
-                  lineHeight: '1.6',
-                  animation: 'fadeIn 0.3s ease-out'
-                }}>
-                  {section.content}
-                </div>
-              )}
+    <div className="guide-overlay" onClick={(e) => e.target === e.currentTarget && onClose()}>
+      <div className="guide-panel" role="dialog" aria-labelledby="guide-title">
+        <header className="guide-header">
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+            <div className="panel-header__icon">
+              <BookOpen size={18} />
             </div>
-          ))}
+            <h1 id="guide-title">How to use NEWSIFYX.AI</h1>
+          </div>
+          <button type="button" className="btn-close-guide" onClick={onClose} aria-label="Close guide">
+            <X size={18} />
+          </button>
+        </header>
+
+        <div className="guide-sections">
+          {sections.map((section) => {
+            const isOpen = expandedSection === section.id;
+            return (
+              <div key={section.id} className="guide-section">
+                <button
+                  type="button"
+                  className="guide-section__trigger"
+                  onClick={() => setExpandedSection(isOpen ? null : section.id)}
+                  aria-expanded={isOpen}
+                >
+                  <span className="guide-section__head">
+                    <span className="guide-section__icon">{section.icon}</span>
+                    {section.title}
+                  </span>
+                  <ChevronRight
+                    size={18}
+                    className={`guide-section__chevron ${isOpen ? 'guide-section__chevron--open' : ''}`}
+                  />
+                </button>
+                {isOpen && <div className="guide-section__body">{section.content}</div>}
+              </div>
+            );
+          })}
         </div>
 
-        <div style={{
-          marginTop: '30px',
-          padding: '20px',
-          background: 'rgba(59, 130, 246, 0.1)',
-          border: '1px solid rgba(59, 130, 246, 0.3)',
-          borderRadius: '12px',
-          textAlign: 'center'
-        }}>
-          <p style={{margin: 0, color: '#3b82f6', fontSize: '0.9rem'}}>
-            Need more help? Check the API documentation or review the system logs.
-          </p>
+        <div className="guide-footer">
+          Need API details? Visit <code>/docs</code> on your backend URL.
         </div>
       </div>
     </div>
@@ -346,4 +182,3 @@ const HowToUse = ({ onClose }) => {
 };
 
 export default HowToUse;
-
