@@ -1,6 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { apiService } from '../services/api';
-import { Activity, ExternalLink, RefreshCw, AlertCircle, Inbox } from 'lucide-react';
+import { Activity, ExternalLink, RefreshCw, AlertCircle, Inbox, Copy } from 'lucide-react';
+
+const X_COMPOSE_URL = 'https://twitter.com/intent/tweet';
+
+const isManualTweet = (tweet) =>
+  tweet?.post_mode === 'manual' || String(tweet?.tweet_id || '').startsWith('manual-');
 
 const TweetFeed = () => {
   const [tweets, setTweets] = useState([]);
@@ -140,7 +145,11 @@ const TweetFeed = () => {
         </div>
       ) : (
         <div className="tweet-list" style={{ opacity: loading ? 0.65 : 1, transition: 'opacity 0.3s' }}>
-          {tweets.map((tweet) => (
+          {tweets.map((tweet) => {
+            const manual = isManualTweet(tweet);
+            const composeUrl = `${X_COMPOSE_URL}?text=${encodeURIComponent(tweet.tweet_text || tweet.text || '')}`;
+
+            return (
             <article key={tweet.id || tweet.tweet_id} className="tweet-card">
               <div className="tweet-card__avatar" aria-hidden="true">
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
@@ -150,24 +159,37 @@ const TweetFeed = () => {
               <div className="tweet-card__body">
                 <div className="tweet-card__meta">
                   <span className="tweet-topic">{truncateTopic(tweet.topic)}</span>
+                  {manual && <span className="manual-badge">Manual — not on X</span>}
                   <time className="tweet-time" dateTime={tweet.created_at || tweet.timestamp}>
                     {formatDate(tweet.created_at || tweet.timestamp)}
                   </time>
                 </div>
                 <p className="tweet-text">{tweet.tweet_text || tweet.text || 'No content'}</p>
-                {tweet.tweet_id && (
+                {manual ? (
                   <a
-                    href={`https://x.com/i/web/status/${tweet.tweet_id}`}
+                    href={composeUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="tweet-link"
+                    className="tweet-link tweet-link--manual"
                   >
-                    View on X <ExternalLink size={12} />
+                    <Copy size={12} /> Copy & post on X
                   </a>
+                ) : (
+                  tweet.tweet_id && (
+                    <a
+                      href={`https://x.com/i/web/status/${tweet.tweet_id}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="tweet-link"
+                    >
+                      View on X <ExternalLink size={12} />
+                    </a>
+                  )
                 )}
               </div>
             </article>
-          ))}
+            );
+          })}
         </div>
       )}
     </section>

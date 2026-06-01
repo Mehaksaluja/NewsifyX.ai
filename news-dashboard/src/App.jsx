@@ -43,7 +43,7 @@ function App() {
           </div>
 
           <div className="sidebar-scroll">
-            <SettingsPanel />
+            <SettingsPanel onModalOpen={() => setActiveTab('feed')} />
 
             <div className="glass-card glass-card--compact">
               <div className="panel-header" style={{ marginBottom: 12 }}>

@@ -6,13 +6,12 @@ import {
   Power,
   Zap,
   AlertTriangle,
-  CheckCircle,
   X,
   RefreshCw,
-  ExternalLink,
 } from 'lucide-react';
+import AgentPostModal from './AgentPostModal';
 
-const SettingsPanel = () => {
+const SettingsPanel = ({ onModalOpen }) => {
   const [config, setConfig] = useState({
     is_active: true,
     tweets_per_day: 4,
@@ -24,8 +23,15 @@ const SettingsPanel = () => {
   const [connectionError, setConnectionError] = useState(null);
   const [updating, setUpdating] = useState(false);
   const [postedTweet, setPostedTweet] = useState(null);
+  const [postResult, setPostResult] = useState(null);
+  const [copied, setCopied] = useState(false);
   const { online } = useApiStatus();
   const [modalState, setModalState] = useState('idle');
+
+  const openModal = (state) => {
+    onModalOpen?.();
+    setModalState(state);
+  };
 
   useEffect(() => {
     loadConfig();
@@ -49,7 +55,7 @@ const SettingsPanel = () => {
         });
 
         if (modalState === 'processing' && !data.force_run) {
-          setModalState('success');
+          openModal('success');
         }
       } else {
         setConnectionError(result.error || 'Failed to load configuration');
@@ -93,43 +99,68 @@ const SettingsPanel = () => {
       setConnectionError('API server is offline. Start the backend first.');
       return;
     }
-    setModalState('confirm');
+    openModal('confirm');
   };
 
   const confirmPost = async () => {
-    setModalState('processing');
+    openModal('processing');
     setConnectionError(null);
     setPostedTweet(null);
+    setPostResult(null);
+    setCopied(false);
 
     try {
       const result = await apiService.runAgent();
 
       if (result.success) {
-        const tweetId = result.data?.tweet_id;
+        const data = result.data || {};
+        const tweetId = data.tweet_id;
 
         if (!tweetId) {
           setConnectionError(
-            'Tweet was not posted. No tweet ID returned — posting may have failed.'
+            'Tweet was not generated. No ID returned — the agent cycle may have failed.'
           );
-          setModalState('error');
+          openModal('error');
           return;
         }
+
+        setPostResult({
+          manualPost: Boolean(data.manual_post),
+          message: data.message,
+          instructions: data.instructions,
+          tweetText: data.tweet_text,
+          tweetId,
+        });
+
+        let tweetForModal = null;
 
         try {
           const tweetsResult = await apiService.getTweets(1);
           if (tweetsResult.success && tweetsResult.data?.tweets?.length > 0) {
             const latestTweet = tweetsResult.data.tweets[0];
             if (latestTweet.tweet_id === tweetId || latestTweet.id) {
-              setPostedTweet(latestTweet);
+              tweetForModal = latestTweet;
             }
           }
         } catch (e) {
           console.log('Could not fetch tweet details:', e);
         }
-        setModalState('success');
+
+        if (!tweetForModal && data.tweet_text) {
+          tweetForModal = {
+            topic: 'News update',
+            tweet_text: data.tweet_text,
+            tweet_id: tweetId,
+            post_mode: data.manual_post ? 'manual' : 'api',
+            created_at: 'Just now',
+          };
+        }
+
+        setPostedTweet(tweetForModal);
+        openModal('success');
       } else {
         setConnectionError(result.error || 'Failed to trigger agent');
-        setModalState('error');
+        openModal('error');
       }
     } catch (error) {
       console.error('Error triggering post:', error);
@@ -146,11 +177,28 @@ const SettingsPanel = () => {
       }
 
       setConnectionError(errorMsg);
-      setModalState('error');
+      openModal('error');
     }
   };
 
-  const closeModal = () => setModalState('idle');
+  const closeModal = () => {
+    setModalState('idle');
+    setPostResult(null);
+    setPostedTweet(null);
+    setCopied(false);
+  };
+
+  const handleCopyTweet = async () => {
+    const tweetBody = postedTweet?.tweet_text || postResult?.tweetText || '';
+    if (!tweetBody) return;
+    try {
+      await navigator.clipboard.writeText(tweetBody);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2500);
+    } catch {
+      setConnectionError('Could not copy to clipboard. Select the text and copy manually.');
+    }
+  };
 
   if (loading) {
     return (
@@ -263,128 +311,20 @@ const SettingsPanel = () => {
         </div>
       </div>
 
-      {modalState === 'confirm' && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-labelledby="confirm-title">
-          <div className="modal-card">
-            <div className="modal-icon">
-              <AlertTriangle size={28} />
-            </div>
-            <h3 id="confirm-title" className="modal-title">
-              Deploy agent?
-            </h3>
-            <p className="modal-desc">
-              The AI will find news and post immediately, overriding the normal schedule.
-            </p>
-            <div className="modal-actions">
-              <button type="button" className="btn btn-cancel" onClick={closeModal}>
-                Cancel
-              </button>
-              <button type="button" className="btn btn-primary" onClick={confirmPost}>
-                Post now
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {modalState === 'processing' && (
-        <div className="modal-overlay" role="dialog" aria-modal="true" aria-busy="true">
-          <div className="modal-card">
-            <div className="spinner" />
-            <h3 className="modal-title">Agent is working</h3>
-            <p className="modal-desc">
-              Finding news, writing the tweet, and generating hashtags. This takes about 20–30 seconds.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {modalState === 'error' && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card modal-card--wide">
-            <div className="modal-icon modal-icon--error">
-              <AlertTriangle size={28} />
-            </div>
-            <h3 className="modal-title" style={{ color: 'var(--danger)' }}>
-              Something went wrong
-            </h3>
-            <div className="alert alert--error" style={{ textAlign: 'left', marginBottom: 0 }}>
-              {connectionError || 'An unknown error occurred'}
-            </div>
-            <div className="modal-actions" style={{ marginTop: 24 }}>
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  setModalState('idle');
-                  setConnectionError(null);
-                }}
-              >
-                Close
-              </button>
-              <button
-                type="button"
-                className="btn btn-cancel"
-                onClick={() => {
-                  setModalState('idle');
-                  setConnectionError(null);
-                  setTimeout(handleTriggerClick, 100);
-                }}
-              >
-                Retry
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {modalState === 'success' && (
-        <div className="modal-overlay" role="dialog" aria-modal="true">
-          <div className="modal-card modal-card--wide">
-            <div className="modal-icon modal-icon--success">
-              <CheckCircle size={28} />
-            </div>
-            <h3 className="modal-title">Tweet posted</h3>
-
-            {postedTweet ? (
-              <div className="modal-tweet-preview">
-                <div className="tweet-card__meta" style={{ marginBottom: 12 }}>
-                  <span className="tweet-topic">{postedTweet.topic || 'News update'}</span>
-                  <span className="tweet-time">{postedTweet.created_at || 'Just now'}</span>
-                </div>
-                <p className="tweet-text" style={{ marginBottom: 14 }}>
-                  {postedTweet.tweet_text || 'Tweet content'}
-                </p>
-                {postedTweet.tweet_id && (
-                  <a
-                    href={`https://x.com/i/web/status/${postedTweet.tweet_id}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="tweet-link"
-                  >
-                    <ExternalLink size={14} /> View on X
-                  </a>
-                )}
-              </div>
-            ) : (
-              <p className="modal-desc">Your agent successfully broadcast the update to X.</p>
-            )}
-
-            <div className="modal-actions">
-              <button
-                type="button"
-                className="btn btn-primary"
-                onClick={() => {
-                  setModalState('idle');
-                  setPostedTweet(null);
-                }}
-              >
-                Done
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      <AgentPostModal
+        modalState={modalState}
+        connectionError={connectionError}
+        postResult={postResult}
+        postedTweet={postedTweet}
+        copied={copied}
+        onClose={closeModal}
+        onConfirm={confirmPost}
+        onRetry={() => {
+          closeModal();
+          setTimeout(handleTriggerClick, 100);
+        }}
+        onCopyTweet={handleCopyTweet}
+      />
     </>
   );
 };

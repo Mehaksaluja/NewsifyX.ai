@@ -9,7 +9,7 @@ from tools.hashtag_tool import HashtagGeneratorTool
 from tools.final_tweet_tool import FinalTweetAssemblerTool
 from tools.news_scraper_tool import NewsScraperTool
 from tools.headline_selection_tool import HeadlineSelectionTool
-from tools.twitter_poster_tool import TwitterPosterTool
+from tools.twitter_poster_tool import TwitterPosterTool, MANUAL_TWEET_MARKER
 import time
 
 class AgentService:
@@ -74,6 +74,8 @@ class AgentService:
             execution_time = time.time() - start_time
             
             tweet_id = None
+            tweet_text = None
+            manual_post = False
             error_message = None
             
             if outputs and len(outputs) > 0:
@@ -83,11 +85,24 @@ class AgentService:
                         error_message = output_str
                         print(f"[SERVICE] Error detected in output: {error_message}")
                         break
+                    elif "Success: Manual post ready. ID" in output_str:
+                        manual_post = True
+                        try:
+                            id_part = output_str.split("Success: Manual post ready. ID ", 1)[1]
+                            if MANUAL_TWEET_MARKER in id_part:
+                                id_and_text = id_part.split(MANUAL_TWEET_MARKER, 1)
+                                tweet_id = id_and_text[0].strip()
+                                tweet_text = id_and_text[1].strip()
+                            else:
+                                tweet_id = id_part.strip()
+                        except Exception:
+                            pass
+                        print(f"[SERVICE] Manual post ready. ID: {tweet_id}")
                     elif "Success: Tweet posted with ID" in output_str:
                         try:
                             tweet_id = output_str.split("ID ")[1].strip()
                             print(f"[SERVICE] Tweet posted successfully with ID: {tweet_id}")
-                        except:
+                        except Exception:
                             pass
 
             print("\n--- CYCLE COMPLETE ---")
@@ -108,12 +123,28 @@ class AgentService:
                     "execution_time": round(execution_time, 2),
                     "tweet_id": None
                 }
+
+            instructions = None
+            message = "Agent cycle completed successfully"
+            if manual_post:
+                message = (
+                    "Tweet generated successfully. X API credits are unavailable — "
+                    "copy the tweet below and post it manually on X."
+                )
+                instructions = (
+                    "1. Click \"Copy tweet\" below\n"
+                    "2. Open X and compose a new post\n"
+                    "3. Paste the text and publish"
+                )
             
             return {
                 "success": True,
-                "message": "Agent cycle completed successfully",
+                "message": message,
                 "execution_time": round(execution_time, 2),
                 "tweet_id": tweet_id,
+                "tweet_text": tweet_text,
+                "manual_post": manual_post,
+                "instructions": instructions,
                 "outputs_count": len(outputs)
             }
             

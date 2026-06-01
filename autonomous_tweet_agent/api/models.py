@@ -24,6 +24,9 @@ class RunAgentResponse(BaseModel):
     timestamp: str
     execution_time: Optional[float] = None
     tweet_id: Optional[str] = None
+    tweet_text: Optional[str] = None
+    manual_post: bool = False
+    instructions: Optional[str] = None
     error: Optional[str] = None
 
 class TweetItem(BaseModel):
@@ -33,6 +36,7 @@ class TweetItem(BaseModel):
     tweet_id: str
     created_at: str
     timestamp: str
+    post_mode: Optional[str] = "api"
 
 class TweetsResponse(BaseModel):
     success: bool

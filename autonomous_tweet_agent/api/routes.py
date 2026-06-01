@@ -91,7 +91,10 @@ async def run_agent(background_tasks: BackgroundTasks):
                 message=result.get("message", "Agent cycle completed successfully"),
                 timestamp=datetime.now().isoformat(),
                 execution_time=result.get("execution_time"),
-                tweet_id=tweet_id
+                tweet_id=tweet_id,
+                tweet_text=result.get("tweet_text"),
+                manual_post=result.get("manual_post", False),
+                instructions=result.get("instructions"),
             )
         else:
             error_msg = result.get("error", "Unknown error occurred")
@@ -135,7 +138,10 @@ async def get_tweets(limit: int = 10):
                 tweet_text=data.get("tweet_text", ""),
                 tweet_id=data.get("tweet_id", ""),
                 created_at=data.get("created_at", ""),
-                timestamp=data.get("timestamp").isoformat() if hasattr(data.get("timestamp"), "isoformat") else str(data.get("timestamp", ""))
+                timestamp=data.get("timestamp").isoformat() if hasattr(data.get("timestamp"), "isoformat") else str(data.get("timestamp", "")),
+                post_mode=data.get("post_mode") or (
+                    "manual" if str(data.get("tweet_id", "")).startswith("manual-") else "api"
+                ),
             ))
         
         return TweetsResponse(

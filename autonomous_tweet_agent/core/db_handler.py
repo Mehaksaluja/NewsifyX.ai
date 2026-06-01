@@ -62,7 +62,7 @@ def init_firebase():
         traceback.print_exc()
         return None
 
-def log_tweet(topic, tweet_text, tweet_id):
+def log_tweet(topic, tweet_text, tweet_id, post_mode="api"):
     if db_client is None: 
         result = init_firebase()
         if result is None:
@@ -73,6 +73,7 @@ def log_tweet(topic, tweet_text, tweet_id):
         "topic": topic,
         "tweet_text": tweet_text,
         "tweet_id": tweet_id,
+        "post_mode": post_mode,
         "timestamp": datetime.datetime.now(),
         "created_at": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     }
