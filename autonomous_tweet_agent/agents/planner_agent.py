@@ -1,9 +1,9 @@
 import json
-from core.model_adapter import GroqModelAdapter
+from core.model_adapter import OpenAIModelAdapter
 
 class PlannerAgent:
     def __init__(self):
-        self.model = GroqModelAdapter("llama-3.3-70b-versatile")
+        self.model = OpenAIModelAdapter()
 
     async def plan(self, user_query: str):
         prompt = f"""

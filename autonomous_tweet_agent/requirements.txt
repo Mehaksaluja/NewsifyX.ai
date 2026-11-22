@@ -13,7 +13,7 @@ tweepy
 python-dotenv
 firebase-admin
 
-groq
+openai
 
 fastapi
 uvicorn[standard]

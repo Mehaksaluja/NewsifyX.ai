@@ -1,36 +1,40 @@
 import os
-from groq import Groq
+from openai import AsyncOpenAI
 from dotenv import load_dotenv
 
 load_dotenv()
 
-class GroqModelAdapter:
-    def __init__(self, model_name="llama-3.3-70b-versatile"):
-        api_key = os.getenv("GROQ_API_KEY")
+DEFAULT_MODEL = os.getenv("OPENAI_MODEL", "gpt-4o-mini")
+
+
+class OpenAIModelAdapter:
+    def __init__(self, model_name: str | None = None):
+        api_key = os.getenv("OPENAI_API_KEY")
         if not api_key:
-            print("CRITICAL ERROR: GROQ_API_KEY not found in .env file!")
-        
+            print("CRITICAL ERROR: OPENAI_API_KEY not found in .env file!")
+
+        self.model_name = model_name or DEFAULT_MODEL
         try:
-            self.client = Groq(api_key=api_key)
-            self.model_name = model_name
-            print(f"Groq AI Adapter initialized with {model_name}")
+            self.client = AsyncOpenAI(api_key=api_key)
+            print(f"OpenAI Adapter initialized with {self.model_name}")
         except Exception as e:
-            print(f"Error configuring Groq: {e}")
+            self.client = None
+            print(f"Error configuring OpenAI: {e}")
 
     async def generate(self, prompt: str) -> str:
+        if self.client is None:
+            return "Error: OpenAI client not configured"
         try:
-            chat_completion = self.client.chat.completions.create(
-                messages=[
-                    {
-                        "role": "user",
-                        "content": prompt,
-                    }
-                ],
+            response = await self.client.chat.completions.create(
                 model=self.model_name,
+                messages=[{"role": "user", "content": prompt}],
                 temperature=0.7,
             )
-            return chat_completion.choices[0].message.content.strip()
-        
+            return (response.choices[0].message.content or "").strip()
         except Exception as e:
-            print(f"Error generating text with Groq: {e}")
+            print(f"Error generating text with OpenAI: {e}")
             return f"Error: {e}"
+
+
+# Backwards-compatible alias
+GroqModelAdapter = OpenAIModelAdapter

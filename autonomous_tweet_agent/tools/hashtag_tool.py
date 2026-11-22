@@ -1,12 +1,12 @@
 from tools.base_tool import BaseTool
-from core.model_adapter import GroqModelAdapter
+from core.model_adapter import OpenAIModelAdapter
 
 class HashtagGeneratorTool(BaseTool):
     name = "hashtags"
     description = "Generates clean, trending hashtags."
 
     def __init__(self):
-        self.model = GroqModelAdapter("llama-3.3-70b-versatile")
+        self.model = OpenAIModelAdapter()
 
     async def run(self, input_data: str):
         
