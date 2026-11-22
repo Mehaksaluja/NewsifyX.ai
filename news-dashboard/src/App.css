@@ -103,18 +103,6 @@ body {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.brand-mark {
-  width: 44px;
-  height: 44px;
-  border-radius: var(--radius-md);
-  background: linear-gradient(135deg, var(--accent) 0%, var(--cyan) 100%);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 20px var(--accent-glow);
-  flex-shrink: 0;
-}
-
 .brand-text {
   display: flex;
   flex-direction: column;
@@ -124,7 +112,7 @@ body {
 .brand-name {
   font-family: var(--font-mono);
   font-weight: 600;
-  font-size: 0.95rem;
+  font-size: 1.05rem;
   letter-spacing: 0.02em;
   color: var(--text-primary);
 }

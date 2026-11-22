@@ -13,14 +13,36 @@ def is_manual_post_mode() -> bool:
     return os.environ.get("MANUAL_POST", "").lower() in ("true", "1", "yes")
 
 
-def should_fallback_to_manual(error_msg: str) -> bool:
+def describe_x_error(e: Exception) -> str:
+    """Build a readable reason from an X/tweepy error, including X's own explanation."""
+    parts = [str(e).strip()]
+    resp = getattr(e, "response", None)
+    if resp is not None:
+        try:
+            body = resp.json()
+            for key in ("detail", "title", "reason"):
+                if body.get(key) and body[key] not in parts[0]:
+                    parts.append(str(body[key]))
+        except Exception:
+            text = getattr(resp, "text", "")
+            if text and text not in parts[0]:
+                parts.append(text[:300])
+    return " | ".join(p for p in parts if p)
+
+
+def friendly_reason(error_msg: str) -> str:
     lowered = error_msg.lower()
-    return (
-        "402" in error_msg
-        or "payment required" in lowered
-        or "does not have any credits" in lowered
-        or "credit" in lowered and "required" in lowered
-    )
+    if "duplicate" in lowered:
+        return "X rejected it as duplicate content"
+    if "402" in error_msg or "credit" in lowered or "payment required" in lowered:
+        return "X API credits are unavailable"
+    if "403" in error_msg or "forbidden" in lowered:
+        return "X refused the post (403 Forbidden)"
+    if "401" in error_msg or "unauthorized" in lowered:
+        return "X API credentials were rejected"
+    if "429" in error_msg or "too many requests" in lowered:
+        return "X API rate limit reached"
+    return "X API posting failed"
 
 
 class TwitterPosterTool(BaseTool):
@@ -70,6 +92,7 @@ class TwitterPosterTool(BaseTool):
         return topic
 
     def _manual_post(self, clean_tweet: str, reason: str) -> str:
+        self.last_manual_reason = reason
         manual_id = f"manual-{uuid.uuid4().hex[:12]}"
         topic = self._extract_topic(clean_tweet)
 
@@ -87,6 +110,10 @@ class TwitterPosterTool(BaseTool):
 
     async def run(self, tweet_text: str):
         clean_tweet = tweet_text.strip()
+        self.last_manual_reason = None
+
+        if not clean_tweet or clean_tweet.lower().startswith("error"):
+            return f"Error: No tweet was generated to post. {clean_tweet}"
 
         if len(clean_tweet) > 280:
             clean_tweet = clean_tweet[:277] + "..."
@@ -121,15 +148,7 @@ class TwitterPosterTool(BaseTool):
             return f"Success: Tweet posted with ID {tweet_id}"
 
         except Exception as e:
-            error_msg = str(e)
+            error_msg = " ".join(describe_x_error(e).split())
             print(f"POST ERROR: {error_msg}", flush=True)
-
-            if should_fallback_to_manual(error_msg):
-                return self._manual_post(clean_tweet, error_msg)
-
-            if "duplicate" in error_msg.lower():
-                return "Error: Duplicate tweet detected. Please wait before posting similar content."
-            if "spam" in error_msg.lower() or "suspended" in error_msg.lower():
-                return "Error: Content flagged. Please review tweet content for spam or policy violations."
-
-            return f"Error: Failed to post tweet. {error_msg}"
+            # The tweet is already written - never throw it away. Hand it over for manual posting.
+            return self._manual_post(clean_tweet, f"{friendly_reason(error_msg)}: {error_msg}")

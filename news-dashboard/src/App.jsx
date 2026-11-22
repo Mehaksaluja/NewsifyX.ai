@@ -12,7 +12,6 @@ import {
   Settings,
   BookOpen,
   BarChart3,
-  Sparkles,
   LogOut,
 } from 'lucide-react';
 
@@ -36,9 +35,6 @@ function Dashboard({ username, onLogout }) {
           className={`sidebar ${isMobile && activeTab === 'settings' ? 'active' : ''} ${!isMobile ? 'active' : ''}`}
         >
           <div className="brand">
-            <div className="brand-mark">
-              <Sparkles size={22} color="#fff" strokeWidth={2.5} />
-            </div>
             <div className="brand-text">
               <span className="brand-name">NEWSIFYX.AI</span>
               <span className="brand-tagline">Autonomous broadcast</span>

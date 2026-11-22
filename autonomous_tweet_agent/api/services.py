@@ -127,9 +127,11 @@ class AgentService:
             instructions = None
             message = "Agent cycle completed successfully"
             if manual_post:
+                poster = self.registry.get("twitter_poster")
+                reason = getattr(poster, "last_manual_reason", None) or "X API unavailable"
                 message = (
-                    "Tweet generated successfully. X API credits are unavailable — "
-                    "copy the tweet below and post it manually on X."
+                    f"Tweet generated successfully, but it couldn't be posted automatically "
+                    f"({reason}). Copy the tweet below and post it manually on X."
                 )
                 instructions = (
                     "1. Click \"Copy tweet\" below\n"

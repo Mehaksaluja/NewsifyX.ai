@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Sparkles, LogIn, Lock, User, AlertCircle } from 'lucide-react';
+import { LogIn, Lock, User, AlertCircle } from 'lucide-react';
 import { apiService } from '../services/api';
 
 export default function Login({ onLogin }) {
@@ -30,9 +30,6 @@ export default function Login({ onLogin }) {
     <div className="login-screen">
       <form className="glass-card login-card" onSubmit={handleSubmit} noValidate>
         <div className="brand login-brand">
-          <div className="brand-mark">
-            <Sparkles size={22} color="#fff" strokeWidth={2.5} />
-          </div>
           <div className="brand-text">
             <span className="brand-name">NEWSIFYX.AI</span>
             <span className="brand-tagline">Mission control access</span>
