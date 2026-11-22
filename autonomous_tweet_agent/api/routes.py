@@ -1,4 +1,6 @@
-from fastapi import APIRouter, HTTPException, BackgroundTasks, Request
+from fastapi import APIRouter, HTTPException, BackgroundTasks, Request, Depends
+from pydantic import BaseModel
+from api.auth import check_credentials, create_token, require_auth
 from fastapi.responses import Response
 from datetime import datetime, timedelta
 from typing import List
@@ -17,6 +19,24 @@ from api.services import agent_service
 from core.db_handler import get_bot_config, turn_off_force_run, log_tweet
 
 router = APIRouter()
+
+
+class LoginRequest(BaseModel):
+    username: str
+    password: str
+
+
+@router.post("/login", tags=["Auth"])
+async def login(body: LoginRequest):
+    if not check_credentials(body.username, body.password):
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+    token, expires_at = create_token(body.username)
+    return {"success": True, "token": token, "username": body.username, "expires_at": expires_at}
+
+
+@router.get("/me", tags=["Auth"])
+async def me(user: str = Depends(require_auth)):
+    return {"success": True, "username": user}
 
 # Ultra-lightweight ping endpoint for monitoring services (avoids rate limits)
 @router.get("/ping", tags=["Health"])
@@ -53,7 +73,7 @@ async def health_check_head():
 async def health_check_options():
     return Response(status_code=200, headers={"Allow": "GET, POST, HEAD, OPTIONS"})
 
-@router.get("/status", response_model=AgentStatusResponse, tags=["Status"])
+@router.get("/status", response_model=AgentStatusResponse, tags=["Status"], dependencies=[Depends(require_auth)])
 async def get_status():
     status = agent_service.get_status()
     
@@ -71,7 +91,7 @@ async def get_status():
         timestamp=status.get("timestamp", datetime.now().isoformat())
     )
 
-@router.post("/run-agent", response_model=RunAgentResponse, tags=["Agent"])
+@router.post("/run-agent", response_model=RunAgentResponse, tags=["Agent"], dependencies=[Depends(require_auth)])
 async def run_agent(background_tasks: BackgroundTasks):
     try:
         config = get_bot_config()
@@ -115,7 +135,7 @@ async def run_agent(background_tasks: BackgroundTasks):
             detail=f"Internal server error: {str(e)}"
         )
 
-@router.get("/tweets", response_model=TweetsResponse, tags=["Tweets"])
+@router.get("/tweets", response_model=TweetsResponse, tags=["Tweets"], dependencies=[Depends(require_auth)])
 async def get_tweets(limit: int = 10):
     try:
         from core.db_handler import db_client, init_firebase
@@ -160,7 +180,7 @@ async def get_tweets(limit: int = 10):
             detail=f"Error fetching tweets: {str(e)}"
         )
 
-@router.get("/stats", response_model=StatsResponse, tags=["Analytics"])
+@router.get("/stats", response_model=StatsResponse, tags=["Analytics"], dependencies=[Depends(require_auth)])
 async def get_stats():
     try:
         from core.db_handler import db_client, init_firebase
@@ -233,7 +253,7 @@ async def get_stats():
             detail=f"Error fetching statistics: {str(e)}"
         )
 
-@router.put("/config", response_model=ConfigUpdateResponse, tags=["Config"])
+@router.put("/config", response_model=ConfigUpdateResponse, tags=["Config"], dependencies=[Depends(require_auth)])
 async def update_config(config_update: ConfigUpdateRequest):
     try:
         from core.db_handler import db_client, init_firebase

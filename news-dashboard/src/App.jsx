@@ -4,6 +4,8 @@ import SettingsPanel from './components/SettingsPanel';
 import TweetFeed from './components/TweetFeed';
 import HowToUse from './components/HowToUse';
 import StatsBar from './components/StatsBar';
+import Login from './components/Login';
+import { apiService } from './services/api';
 import { useApiHealth, useApiStatus } from './hooks/useApi';
 import {
   LayoutList,
@@ -11,9 +13,10 @@ import {
   BookOpen,
   BarChart3,
   Sparkles,
+  LogOut,
 } from 'lucide-react';
 
-function App() {
+function Dashboard({ username, onLogout }) {
   const [activeTab, setActiveTab] = useState('feed');
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   const [showGuide, setShowGuide] = useState(false);
@@ -104,10 +107,16 @@ function App() {
                 Monitor autonomous news curation and live broadcasts to X in real time.
               </p>
             </div>
-            <button type="button" className="btn btn-ghost" onClick={() => setShowGuide(true)}>
-              <BookOpen size={18} />
-              <span>Guide</span>
-            </button>
+            <div className="header-actions">
+              <button type="button" className="btn btn-ghost" onClick={() => setShowGuide(true)}>
+                <BookOpen size={18} />
+                <span>Guide</span>
+              </button>
+              <button type="button" className="btn btn-ghost" onClick={onLogout} title={`Signed in as ${username}`}>
+                <LogOut size={18} />
+                <span>Log out</span>
+              </button>
+            </div>
           </header>
 
           <StatsBar statusData={statusData} healthy={healthy} healthLoading={healthLoading} />
@@ -138,6 +147,57 @@ function App() {
       </div>
     </div>
   );
+}
+
+function App() {
+  // 'checking' while we validate a stored token, then 'in' or 'out'
+  const [authState, setAuthState] = useState(apiService.isAuthenticated() ? 'checking' : 'out');
+  const [username, setUsername] = useState(apiService.username);
+
+  useEffect(() => {
+    apiService.onUnauthorized = () => setAuthState('out');
+    return () => { apiService.onUnauthorized = null; };
+  }, []);
+
+  useEffect(() => {
+    if (authState !== 'checking') return;
+    apiService.verifySession().then((result) => {
+      if (result.success) {
+        setUsername(result.data.username);
+        setAuthState('in');
+      } else if (result.error?.includes('Cannot connect')) {
+        // Backend unreachable: keep the session, the dashboard shows "Offline".
+        setAuthState('in');
+      } else {
+        apiService.logout();
+        setAuthState('out');
+      }
+    });
+  }, [authState]);
+
+  const handleLogin = (name) => {
+    setUsername(name);
+    setAuthState('in');
+  };
+
+  const handleLogout = () => {
+    apiService.logout();
+    setAuthState('out');
+  };
+
+  if (authState === 'checking') {
+    return (
+      <div className="login-screen">
+        <span className="login-checking">Checking session…</span>
+      </div>
+    );
+  }
+
+  if (authState === 'out') {
+    return <Login onLogin={handleLogin} />;
+  }
+
+  return <Dashboard username={username} onLogout={handleLogout} />;
 }
 
 export default App;
